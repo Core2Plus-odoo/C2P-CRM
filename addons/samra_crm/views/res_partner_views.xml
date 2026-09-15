@@ -57,11 +57,29 @@
         </field>
     </record>
 
+    <!--
+        Three ways in, on purpose. base.view_partner_form ships an empty
+        oe_button_box, so a lone stat button sits in an otherwise bare strip
+        and is easy to miss. The header button is the one an associate will
+        actually find; the Action-menu entry covers people who work from the
+        list.
+    -->
     <record id="view_partner_form_samra_button" model="ir.ui.view">
         <field name="name">res.partner.form.samra.button</field>
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
+            <!-- The base form has no header of its own, so this adds one. -->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button type="object"
+                            name="action_open_samra_profile"
+                            string="Customer 360"
+                            class="btn-primary"
+                            invisible="not id"/>
+                </header>
+            </xpath>
+
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button type="object"
                         name="action_open_samra_profile"
@@ -70,6 +88,19 @@
                         string="Customer 360"
                         invisible="not id"/>
             </xpath>
+        </field>
+    </record>
+
+    <!-- Also under the Action cog, from both the form and the list. -->
+    <record id="action_samra_open_profile" model="ir.actions.server">
+        <field name="name">Customer 360</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records[0].action_open_samra_profile()
         </field>
     </record>
 
