@@ -129,7 +129,7 @@
                 <filter name="mine" string="My Customers"
                         domain="[('user_id', '=', uid)]"/>
 
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="group_occasion" string="Occasion"
                             context="{'group_by': 'x_next_occasion_type'}"/>
                     <filter name="group_month" string="Month"
