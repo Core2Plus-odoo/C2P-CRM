@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_samra_demo_data_form" model="ir.ui.view">
+        <field name="name">samra.demo.data.form</field>
+        <field name="model">samra.demo.data</field>
+        <field name="arch" type="xml">
+            <form string="Generate Demo Data">
+                <div class="alert alert-warning" role="alert">
+                    This writes a large amount of trading history into the current
+                    database. Intended for demo and evaluation instances, not for a
+                    live one.
+                </div>
+                <group>
+                    <group>
+                        <field name="months"/>
+                        <field name="order_count"/>
+                    </group>
+                    <group>
+                        <field name="enrich_products"/>
+                        <field name="with_engagement"/>
+                        <field name="clear_previous"/>
+                    </group>
+                </group>
+                <p class="text-muted">
+                    Orders are tagged so a later run can remove them again. Customer
+                    lifetime value, purchase frequency and VIP tiers are recomputed
+                    at the end, so the dashboard and list views agree with the
+                    profiles straight away.
+                </p>
+                <footer>
+                    <button string="Generate" name="action_generate" type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_samra_demo_data" model="ir.actions.act_window">
+        <field name="name">Generate Demo Data</field>
+        <field name="res_model">samra.demo.data</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="group_ids" eval="[(4, ref('sales_team.group_sale_manager'))]"/>
+    </record>
+
+    <menuitem id="menu_samra_demo_data"
+              name="Generate Demo Data"
+              parent="menu_samra_crm_root"
+              action="action_samra_demo_data"
+              groups="sales_team.group_sale_manager"
+              sequence="90"/>
+
+</odoo>

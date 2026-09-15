@@ -3,6 +3,7 @@ from . import samra_metrics
 from . import samra_analytics
 from . import samra_consent
 from . import samra_transfer
+from . import samra_demo_data
 from . import product_template
 from . import sale_order
 from . import samra_wishlist
