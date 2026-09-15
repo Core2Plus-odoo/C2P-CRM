@@ -131,27 +131,31 @@ export class SamraDashboard extends Component {
 
     // --- drill-down -------------------------------------------------
 
-    drill(resModel, domain, name, viewMode = "list,form") {
+    /**
+     * Every figure drills into the Samra breakdown screen rather than an Odoo
+     * list. The domain travels with it, so the screen is showing exactly the
+     * records the number was computed from -- but presented in the same
+     * register as the dashboard, instead of a grid of technical columns.
+     */
+    drill(kind, domain, title) {
         this.action.doAction({
-            type: "ir.actions.act_window",
-            name,
-            res_model: resModel,
-            domain: domain || [],
-            views: viewMode.split(",").map((mode) => [false, mode]),
-            target: "current",
+            type: "ir.actions.client",
+            tag: "samra_management_breakdown",
+            name: title,
+            params: { kind, domain: domain || [], title },
         });
     }
 
     drillOrders(domain, name) {
-        this.drill("sale.order", domain, name || "Orders");
+        this.drill("orders", domain, name || "Orders");
     }
 
     drillLeads(domain, name) {
-        this.drill("crm.lead", domain, name || "Leads");
+        this.drill("leads", domain, name || "Opportunities");
     }
 
     drillCustomers(domain, name) {
-        this.drill("res.partner", domain, name || "Customers");
+        this.drill("customers", domain, name || "Customers");
     }
 
     openCustomerProfile(partnerId) {

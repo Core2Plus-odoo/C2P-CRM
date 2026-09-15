@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="samra_crm.SamraClientDialog">
+    <Dialog size="'lg'" title="state.data ? state.data.name : 'Client 360'">
+        <div class="samra-pos">
+
+            <div t-if="state.loading" class="samra-pos__msg">Loading client…</div>
+
+            <div t-elif="state.error" class="samra-pos__msg samra-pos__msg--err" t-esc="state.error"/>
+
+            <t t-else="">
+                <t t-set="d" t-value="state.data"/>
+                <t t-set="a" t-value="analytics"/>
+
+                <div class="samra-pos__head">
+                    <span t-att-class="'samra-pos__tier samra-pos__tier--' + d.vip_tier"
+                          t-esc="d.vip_tier_label"/>
+                    <span class="samra-pos__sp" t-if="d.salesperson">
+                        Usually served by <b t-esc="d.salesperson"/>
+                    </span>
+                </div>
+
+                <div class="samra-pos__rail">
+                    <div>
+                        <span>Lifetime</span>
+                        <b t-esc="money(a.lifetime_value)"/>
+                    </div>
+                    <div>
+                        <span>Orders</span>
+                        <b t-esc="a.order_count"/>
+                    </div>
+                    <div t-att-class="d.stats.at_risk ? 'is-risk' : ''">
+                        <span>Last purchase</span>
+                        <b t-esc="formatDate(a.last_purchase)"/>
+                    </div>
+                    <div>
+                        <span>Points</span>
+                        <b t-esc="points(d.loyalty.points)"/>
+                    </div>
+                </div>
+
+                <!-- The panel that earns its place mid-sale: what to show them. -->
+                <section class="samra-pos__card" t-if="preferences.length">
+                    <h3>Prefers</h3>
+                    <div class="samra-pos__prefs">
+                        <div t-foreach="preferences" t-as="pref" t-key="pref.label">
+                            <span t-esc="pref.label"/>
+                            <b t-esc="pref.value"/>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="samra-pos__card" t-if="wishlist.length">
+                    <h3>Wishlist</h3>
+                    <div class="samra-pos__pg">
+                        <div t-foreach="wishlist" t-as="item" t-key="item.id">
+                            <img t-att-src="productImage(item.product_id)" t-att-alt="item.product"/>
+                            <span t-esc="item.product"/>
+                            <b t-esc="money(item.price)"/>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="samra-pos__card" t-if="recentOrders.length">
+                    <h3>Recent Purchases</h3>
+                    <ul class="samra-pos__orders">
+                        <li t-foreach="recentOrders" t-as="order" t-key="order.id">
+                            <div class="samra-pos__orow">
+                                <b t-esc="order.name"/>
+                                <span t-esc="money(order.amount_total)"/>
+                            </div>
+                            <div class="samra-pos__ometa">
+                                <span t-esc="formatDate(order.date)"/>
+                                <span t-if="order.branch" t-esc="order.branch"/>
+                            </div>
+                            <div class="samra-pos__oline" t-foreach="order.lines" t-as="line"
+                                 t-key="line_index" t-esc="line.description"/>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="samra-pos__card samra-pos__consent"
+                         t-if="!d.consent.whatsapp">
+                    No WhatsApp marketing consent on file — do not add to campaigns.
+                </section>
+            </t>
+        </div>
+
+        <t t-set-slot="footer">
+            <button class="btn btn-primary btn-lg" t-on-click="() => this.props.close()">Close</button>
+        </t>
+    </Dialog>
+</t>
+
+<t t-name="samra_crm.ControlButtonsSamra"
+   t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+    <xpath expr="//div[hasclass('control-buttons-modal')]" position="inside">
+        <button class="btn btn-secondary btn-lg o_samra_client_button"
+                t-on-click="() => this.openSamraClient()">
+            <i class="fa fa-diamond me-1" role="img" aria-label="Client 360" title="Client 360"/>
+            Client 360
+        </button>
+    </xpath>
+</t>
+
+</templates>

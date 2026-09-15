@@ -57,6 +57,14 @@ field types match exactly.
             'samra_crm/static/src/scss/samra_theme.scss',
             'samra_crm/static/src/customer_360/**/*',
             'samra_crm/static/src/dashboard/**/*',
+            'samra_crm/static/src/breakdown/**/*',
+        ],
+        # The point of sale runs a separate frontend from its own bundle, so
+        # the theme has to be listed again here -- each bundle is its own SCSS
+        # compilation unit and shares nothing with the backend's.
+        'point_of_sale._assets_pos': [
+            'samra_crm/static/src/scss/samra_theme.scss',
+            'samra_crm/static/src/pos/**/*',
         ],
     },
     'installable': True,

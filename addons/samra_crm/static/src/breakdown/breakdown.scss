@@ -1,0 +1,184 @@
+// Dashboard drill-down. Same register as the dashboard it came from:
+// the figure restated, how it splits, then the records.
+
+.samra-bk {
+    height: 100%;
+    overflow: auto;
+    padding: 22px 28px 40px;
+    background: var(--samra-ground);
+    color: var(--samra-ink);
+    font-size: 13px;
+
+    * { box-sizing: border-box; }
+    .samra-num { font-variant-numeric: tabular-nums; }
+
+    .samra-bk__msg {
+        padding: 40px 0;
+        text-align: center;
+        font-size: 14px;
+        color: var(--samra-ink-soft);
+
+        &--err { color: var(--samra-danger); }
+    }
+
+    .samra-bk__head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 18px;
+        padding: 18px 22px;
+        @include samra-card-surface;
+        border-top: 2px solid var(--samra-gold);
+
+        h1 {
+            margin: 6px 0 0;
+            font-family: var(--samra-display);
+            font-size: 26px;
+            font-weight: 400;
+        }
+    }
+
+    .samra-bk__back {
+        padding: 0;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--samra-gold);
+        background: none;
+        border: 0;
+        cursor: pointer;
+
+        &:hover { text-decoration: underline; }
+    }
+
+    .samra-bk__sum {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 26px;
+
+        > div { display: flex; flex-direction: column; gap: 2px; }
+        span { @include samra-label; }
+
+        b {
+            font-family: var(--samra-display);
+            font-size: 23px;
+            font-weight: 400;
+        }
+    }
+
+    .samra-bk__splits {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--samra-gap);
+        margin-top: var(--samra-gap);
+    }
+
+    .samra-bk__split {
+        @include samra-card-surface;
+        padding: 16px 18px;
+
+        h2 {
+            margin: 0 0 12px;
+            font-family: var(--samra-display);
+            font-size: 17px;
+            font-weight: 400;
+        }
+    }
+
+    .samra-bk__row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 3px 12px;
+
+        & + & { margin-top: 10px; }
+    }
+
+    .samra-bk__lab {
+        font-size: 12px;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .samra-bk__val { font-size: 12px; color: var(--samra-ink-soft); }
+
+    .samra-bk__track {
+        grid-column: 1 / -1;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--samra-track);
+        overflow: hidden;
+    }
+
+    .samra-bk__fill {
+        display: block;
+        height: 100%;
+        min-width: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--samra-gold) 0%, var(--samra-gold-lift) 100%);
+    }
+
+    .samra-bk__table {
+        margin-top: var(--samra-gap);
+        @include samra-card-surface;
+        padding: 6px 4px;
+        overflow-x: auto;
+
+        table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+
+        th {
+            @include samra-label;
+            padding: 12px 14px 10px;
+            text-align: left;
+            white-space: nowrap;
+            border-bottom: 1px solid var(--samra-line);
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--samra-line);
+        }
+
+        tbody tr {
+            cursor: pointer;
+
+            &:hover { background: var(--samra-gold-wash); }
+            &:last-child td { border-bottom: 0; }
+        }
+
+        .is-num { text-align: right; }
+    }
+
+    .samra-bk__chip {
+        padding: 2px 8px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        border-radius: 2px;
+        background: var(--samra-track);
+        color: var(--samra-ink-soft);
+
+        &--vip { color: var(--samra-gold); background: var(--samra-gold-wash); }
+
+        &--vvip {
+            color: var(--samra-on-gold);
+            background: linear-gradient(100deg, var(--samra-gold), var(--samra-gold-lift));
+        }
+    }
+
+    .samra-bk__note {
+        margin: 10px 14px;
+        font-size: 11px;
+        font-style: italic;
+        color: var(--samra-ink-faint);
+    }
+
+    @media (max-width: 767px) {
+        padding: 14px;
+        .samra-bk__head { padding: 14px 16px; }
+        .samra-bk__sum { gap: 16px; }
+    }
+}

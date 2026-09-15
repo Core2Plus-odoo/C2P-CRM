@@ -254,7 +254,7 @@
                             <span class="samra-note">lifetime · by line value</span>
                         </div>
                         <div class="samra-donutwrap">
-                            <svg width="168" height="168" viewBox="0 0 42 42" role="img"
+                            <svg width="132" height="132" viewBox="0 0 42 42" role="img"
                                  aria-label="Share of spend by product category">
                                 <circle cx="21" cy="21" r="15.9" fill="none"
                                         stroke="var(--samra-track)" stroke-width="6"/>

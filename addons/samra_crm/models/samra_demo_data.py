@@ -159,7 +159,13 @@ class SamraDemoData(models.TransientModel):
             # Written rather than confirmed through the workflow: confirming
             # 120 orders would generate 120 deliveries on a demo database and
             # take minutes. The state is what every report reads.
-            order.write({'state': 'sale', 'date_order': when})
+            order.write({'state': 'sale'})
+            # Dated separately, after the state has settled. The field is plain
+            # and writable, but the spread of these dates is the entire point
+            # of the exercise -- a combined write leaves the ordering to the
+            # ORM, and every order landing on today collapses the trend chart
+            # into a single column.
+            order.write({'date_order': when})
             created |= order
 
         return created
