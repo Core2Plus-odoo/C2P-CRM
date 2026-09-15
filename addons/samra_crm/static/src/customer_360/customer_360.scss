@@ -595,6 +595,82 @@
     .samra-pgi__p { font-size: 11px; color: var(--samra-gold-text); font-weight: 600; }
     .samra-pgi__x { font-size: 11px; color: var(--samra-ink-faint); }
 
+    // ---------- recommendations ----------
+    // A row rather than a tile grid. The reason is the point of this panel,
+    // and a reason needs a line of text, not a caption under a thumbnail.
+    .samra-recs {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        > li + li { border-top: 1px solid var(--samra-line); }
+    }
+
+    .samra-rec {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 8px 0;
+        text-align: left;
+        background: none;
+        border: 0;
+        cursor: pointer;
+
+        &:hover .samra-rec__n { color: var(--samra-gold-text); }
+    }
+
+    .samra-rec__img {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 auto;
+        object-fit: cover;
+        border-radius: 2px;
+        background: var(--samra-surface);
+    }
+
+    .samra-rec__b {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .samra-rec__n {
+        font-size: 12.5px;
+        font-weight: 500;
+        line-height: 1.3;
+    }
+
+    .samra-rec__w {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    // The reason carries the panel, so it gets the gold and the weight --
+    // everything else on the row is supporting detail.
+    .samra-rec__r {
+        padding: 1px 6px;
+        font-size: 10.5px;
+        font-weight: 600;
+        border-radius: 2px;
+        color: var(--samra-gold-text);
+        background: var(--samra-gold-wash);
+    }
+
+    .samra-rec__m {
+        font-size: 10.5px;
+        color: var(--samra-ink-faint);
+    }
+
+    .samra-rec__p {
+        flex: 0 0 auto;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
     // ---------- preferences ----------
     .samra-prefs {
         display: grid;
