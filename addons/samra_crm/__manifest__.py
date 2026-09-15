@@ -40,7 +40,7 @@ field types match exactly.
         'loyalty',
     ],
     'data': [
-        'security/ir.model.access.csv',
+        'security/ir.model.access.xml',
         'data/samra_cron.xml',
         'views/res_partner_views.xml',
         'views/samra_crm_menus.xml',

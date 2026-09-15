@@ -6,43 +6,41 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//sheet" position="inside">
-                <notebook position="inside">
-                    <page string="Clienteling" name="samra_clienteling">
-                        <group>
-                            <group string="VIP &amp; Dates">
-                                <field name="x_vip_tier" widget="badge"
-                                       decoration-info="x_vip_tier == 'vip'"
-                                       decoration-success="x_vip_tier == 'vvip'"/>
-                                <field name="x_vip_tier_manual"/>
-                                <field name="x_anniversary"/>
-                                <field name="x_birthday"/>
-                                <field name="x_nationality_id"/>
-                            </group>
-                            <group string="Preferences">
-                                <field name="x_gold_colour_pref"/>
-                                <field name="x_jewellery_category_pref"/>
-                                <field name="x_collection_pref"/>
-                                <field name="x_size_pref"/>
-                                <field name="x_diamond_spec_pref"/>
-                                <field name="x_gemstone_pref"/>
-                                <field name="x_style_pref"/>
-                                <field name="x_budget_pref"/>
-                            </group>
+            <xpath expr="//notebook" position="inside">
+                <page string="Clienteling" name="samra_clienteling">
+                    <group>
+                        <group string="VIP &amp; Dates">
+                            <field name="x_vip_tier" widget="badge"
+                                   decoration-info="x_vip_tier == 'vip'"
+                                   decoration-success="x_vip_tier == 'vvip'"/>
+                            <field name="x_vip_tier_manual"/>
+                            <field name="x_anniversary"/>
+                            <field name="x_birthday"/>
+                            <field name="x_nationality_id"/>
                         </group>
-                        <group>
-                            <group string="Marketing Consent">
-                                <field name="x_whatsapp_consent"/>
-                                <field name="x_sms_consent"/>
-                            </group>
-                            <group string="Purchase Analytics">
-                                <field name="x_lifetime_value"/>
-                                <field name="x_purchase_frequency"/>
-                                <field name="x_last_purchase_date"/>
-                            </group>
+                        <group string="Preferences">
+                            <field name="x_gold_colour_pref"/>
+                            <field name="x_jewellery_category_pref"/>
+                            <field name="x_collection_pref"/>
+                            <field name="x_size_pref"/>
+                            <field name="x_diamond_spec_pref"/>
+                            <field name="x_gemstone_pref"/>
+                            <field name="x_style_pref"/>
+                            <field name="x_budget_pref"/>
                         </group>
-                    </page>
-                </notebook>
+                    </group>
+                    <group>
+                        <group string="Marketing Consent">
+                            <field name="x_whatsapp_consent"/>
+                            <field name="x_sms_consent"/>
+                        </group>
+                        <group string="Purchase Analytics">
+                            <field name="x_lifetime_value"/>
+                            <field name="x_purchase_frequency"/>
+                            <field name="x_last_purchase_date"/>
+                        </group>
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>
