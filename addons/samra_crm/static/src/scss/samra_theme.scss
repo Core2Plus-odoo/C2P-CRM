@@ -17,9 +17,10 @@
 :root {
     --samra-ink:        #1b1613;
     --samra-ink-soft:   #6c6259;
-    --samra-ink-faint:  #968c83;
+    --samra-ink-faint:  #756b62;
 
     --samra-gold:       #9a7b1f;
+    --samra-gold-text:  #7f6318;
     --samra-gold-lift:  #c9a227;
     --samra-gold-wash:  rgba(201, 162, 39, 0.14);
 
@@ -48,7 +49,7 @@
     --samra-seg-5:      #6b756f;
 
     // Text that sits on a gold fill.
-    --samra-on-gold:    #2a1f07;
+    --samra-on-gold:    #171003;
 
     --samra-hero-wash:  rgba(201, 162, 39, 0.13);
     --samra-hero-top:   #efe9df;
@@ -67,9 +68,10 @@
     :root {
         --samra-ink:        #f2ece2;
         --samra-ink-soft:   #a2988a;
-        --samra-ink-faint:  #6f665c;
+        --samra-ink-faint:  #998f82;
 
         --samra-gold:       #c9a227;
+        --samra-gold-text:  #c9a227;
         --samra-gold-lift:  #e6cd7c;
         --samra-gold-wash:  rgba(201, 162, 39, 0.16);
 
@@ -79,7 +81,7 @@
         --samra-line:       rgba(226, 214, 196, 0.10);
         --samra-line-firm:  rgba(226, 214, 196, 0.18);
 
-        --samra-danger:      #b4443a;
+        --samra-danger:      #cf6258;
         --samra-danger-wash: rgba(180, 68, 58, 0.12);
         --samra-good:        #3f8f6a;
         --samra-good-wash:   rgba(63, 143, 106, 0.16);
@@ -112,7 +114,7 @@
 }
 
 @mixin samra-label {
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;

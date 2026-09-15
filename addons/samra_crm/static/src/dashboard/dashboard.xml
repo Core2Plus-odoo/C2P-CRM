@@ -40,6 +40,13 @@
                 </label>
                 <button class="samra-dash__reset" t-on-click="resetFilters">Reset</button>
             </div>
+
+            <div class="samra-dash__presets">
+                <button t-foreach="presets" t-as="preset" t-key="preset.key"
+                        t-att-class="'samra-preset' + (state.preset === preset.key ? ' is-on' : '')"
+                        t-on-click="() => this.applyPreset(preset.key)"
+                        t-esc="preset.label"/>
+            </div>
         </header>
 
         <div t-if="state.loading" class="samra-placeholder">

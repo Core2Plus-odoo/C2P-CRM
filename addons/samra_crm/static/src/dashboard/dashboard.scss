@@ -4,7 +4,7 @@
     padding: 24px;
     background: var(--samra-ground);
     color: var(--samra-ink);
-    font-size: 13px;
+    font-size: 13.5px;
 
     * { box-sizing: border-box; }
 
@@ -24,7 +24,7 @@
         width: 22px;
         height: 22px;
         border: 2px solid var(--samra-line-firm);
-        border-top-color: var(--samra-gold);
+        border-top-color: var(--samra-gold-text);
         border-radius: 50%;
         animation: samra-spin 0.7s linear infinite;
     }
@@ -78,7 +78,7 @@
 
             &:focus {
                 outline: none;
-                border-color: var(--samra-gold);
+                border-color: var(--samra-gold-text);
                 box-shadow: 0 0 0 2px rgba(168, 132, 44, 0.16);
             }
         }
@@ -95,7 +95,7 @@
         border: 1px solid var(--samra-line-firm);
         border-radius: var(--samra-radius);
 
-        &:hover { border-color: var(--samra-gold); color: var(--samra-gold); }
+        &:hover { border-color: var(--samra-gold-text); color: var(--samra-gold-text); }
     }
 
     // ---------- KPI row ----------
@@ -117,7 +117,7 @@
         transition: border-color 0.12s ease, transform 0.12s ease;
 
         &:hover {
-            border-color: var(--samra-gold);
+            border-color: var(--samra-gold-text);
             transform: translateY(-1px);
         }
 
@@ -137,11 +137,11 @@
     }
 
     .samra-kpi__hint {
-        font-size: 11px;
+        font-size: 11.5px;
         color: var(--samra-ink-faint);
     }
 
-    .samra-kpi:hover .samra-kpi__hint { color: var(--samra-gold); }
+    .samra-kpi:hover .samra-kpi__hint { color: var(--samra-gold-text); }
 
     // ---------- panels ----------
     .samra-dash__grid {
@@ -177,7 +177,7 @@
     }
 
     .samra-panel__note {
-        font-size: 11px;
+        font-size: 11.5px;
         color: var(--samra-ink-faint);
     }
 
@@ -236,7 +236,7 @@
     }
 
     .samra-funnel__value {
-        font-size: 11.5px;
+        font-size: 12px;
         color: var(--samra-ink-faint);
         text-align: right;
     }
@@ -301,7 +301,7 @@
         display: flex;
         justify-content: space-between;
         margin-top: 4px;
-        font-size: 11px;
+        font-size: 11.5px;
         color: var(--samra-ink-faint);
     }
 
@@ -335,7 +335,7 @@
 
     .samra-bars__name  { grid-area: name;  font-size: 12.5px; font-weight: 600; }
     .samra-bars__value { grid-area: value; font-size: 12.5px; text-align: right; }
-    .samra-bars__sub   { grid-area: sub;   font-size: 11px; color: var(--samra-ink-faint); text-align: right; }
+    .samra-bars__sub   { grid-area: sub;   font-size: 11.5px; color: var(--samra-ink-faint); text-align: right; }
 
     .samra-bars__track {
         grid-area: track;
@@ -391,7 +391,7 @@
         color: var(--samra-ink-soft);
 
         &--vip {
-            color: var(--samra-gold);
+            color: var(--samra-gold-text);
             background: var(--samra-gold-wash);
         }
 
@@ -500,7 +500,7 @@
         font-weight: 600;
 
         small {
-            font-size: 10.5px;
+            font-size: 11.5px;
             font-weight: 400;
             color: var(--samra-ink-faint);
         }
@@ -528,7 +528,7 @@
     }
 
     .samra-clients__flag {
-        font-size: 10px;
+        font-size: 10.5px;
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
@@ -551,5 +551,44 @@
         .samra-clients__track { grid-area: track; }
         .samra-clients__val { grid-area: val; text-align: left; }
         .samra-clients__flag { grid-area: flag; text-align: right; }
+    }
+}
+
+// Period presets. A manager thinks in months and quarters, not in two dates
+// typed into pickers; the pickers stay for the awkward ranges in between.
+.samra-dash {
+
+    .samra-dash__presets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--samra-line);
+    }
+
+    .samra-preset {
+        padding: 6px 13px;
+        font-size: 12px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        border-radius: 999px;
+        color: var(--samra-ink-soft);
+        background: var(--samra-surface);
+        border: 1px solid var(--samra-line-firm);
+        transition: border-color 0.12s ease, color 0.12s ease;
+
+        &:hover { border-color: var(--samra-gold); color: var(--samra-gold-text); }
+        &:focus-visible { outline: 2px solid var(--samra-gold); outline-offset: 2px; }
+
+        // The active period is stated by fill as well as colour, so it is
+        // obvious which range the figures above describe.
+        &.is-on {
+            color: var(--samra-on-gold);
+            border-color: transparent;
+            background: linear-gradient(100deg, var(--samra-gold), var(--samra-gold-lift));
+        }
     }
 }

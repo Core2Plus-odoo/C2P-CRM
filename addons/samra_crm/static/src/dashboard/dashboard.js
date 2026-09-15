@@ -31,6 +31,7 @@ export class SamraDashboard extends Component {
                 warehouse_id: "",
                 user_id: "",
             },
+            preset: "12m",
         });
 
         onWillStart(async () => {
@@ -45,14 +46,71 @@ export class SamraDashboard extends Component {
         });
     }
 
+    /**
+     * Dates are formatted from local parts rather than toISOString(), which
+     * converts to UTC first and can hand back yesterday for anyone east of
+     * Greenwich -- including, pointedly, Dubai.
+     */
+    iso(date) {
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${date.getFullYear()}-${month}-${day}`;
+    }
+
     today() {
-        return new Date().toISOString().slice(0, 10);
+        return this.iso(new Date());
     }
 
     defaultFrom() {
         const date = new Date();
         date.setMonth(date.getMonth() - 12);
-        return date.toISOString().slice(0, 10);
+        return this.iso(date);
+    }
+
+    get presets() {
+        return [
+            { key: "mtd", label: "This Month" },
+            { key: "last_month", label: "Last Month" },
+            { key: "qtd", label: "This Quarter" },
+            { key: "last_quarter", label: "Last Quarter" },
+            { key: "ytd", label: "Year to Date" },
+            { key: "12m", label: "Last 12 Months" },
+        ];
+    }
+
+    /** Period boundaries for a preset key, as local dates. */
+    presetRange(key) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const quarterStart = month - (month % 3);
+
+        switch (key) {
+            case "mtd":
+                return [new Date(year, month, 1), now];
+            case "last_month":
+                // Day 0 of a month is the last day of the one before it.
+                return [new Date(year, month - 1, 1), new Date(year, month, 0)];
+            case "qtd":
+                return [new Date(year, quarterStart, 1), now];
+            case "last_quarter":
+                return [new Date(year, quarterStart - 3, 1), new Date(year, quarterStart, 0)];
+            case "ytd":
+                return [new Date(year, 0, 1), now];
+            default: {
+                const from = new Date();
+                from.setMonth(from.getMonth() - 12);
+                return [from, now];
+            }
+        }
+    }
+
+    async applyPreset(key) {
+        const [from, to] = this.presetRange(key);
+        this.state.filters.date_from = this.iso(from);
+        this.state.filters.date_to = this.iso(to);
+        this.state.preset = key;
+        await this.load();
     }
 
     async load() {
@@ -80,15 +138,18 @@ export class SamraDashboard extends Component {
 
     onFilterChange(field, event) {
         this.state.filters[field] = event.target.value;
+        if (field === "date_from" || field === "date_to") {
+            // Typing a date puts the range outside any preset, so no chip
+            // should keep claiming to describe it.
+            this.state.preset = null;
+        }
         this.load();
     }
 
     resetFilters() {
-        this.state.filters.date_from = this.defaultFrom();
-        this.state.filters.date_to = this.today();
         this.state.filters.warehouse_id = "";
         this.state.filters.user_id = "";
-        this.load();
+        this.applyPreset("12m");
     }
 
     // --- formatting -------------------------------------------------
