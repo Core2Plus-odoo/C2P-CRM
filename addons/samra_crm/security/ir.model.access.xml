@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Declared in XML rather than the usual ir.model.access.csv.
+
+        Three of these models are named with an x_ prefix, because the module
+        adopts the names Studio originally created so it installs over the
+        existing data instead of orphaning it. Odoo treats that prefix as
+        reserved for manual models and does not generate an ir.model XML id for
+        them, so `model_x_samra_wishlist` and its siblings do not exist. A CSV
+        can only reference a model by XML id, so those rows had nothing to
+        point at and module installation failed.
+
+        XML can resolve model_id by search, which needs no XML id. The wizard
+        below has an ordinary dotted name and does get one, but is declared the
+        same way so every rule here reads alike.
+    -->
+
+    <record id="access_samra_wishlist_user" model="ir.model.access">
+        <field name="name">x_samra_wishlist.user</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_wishlist')]"/>
+        <field name="group_id" ref="base.group_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_wishlist_manager" model="ir.model.access">
+        <field name="name">x_samra_wishlist.manager</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_wishlist')]"/>
+        <field name="group_id" ref="sales_team.group_sale_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="access_samra_viewed_product_user" model="ir.model.access">
+        <field name="name">x_samra_viewed_product.user</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_viewed_product')]"/>
+        <field name="group_id" ref="base.group_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_viewed_product_manager" model="ir.model.access">
+        <field name="name">x_samra_viewed_product.manager</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_viewed_product')]"/>
+        <field name="group_id" ref="sales_team.group_sale_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="access_samra_whatsapp_log_user" model="ir.model.access">
+        <field name="name">x_samra_whatsapp_log.user</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_whatsapp_log')]"/>
+        <field name="group_id" ref="base.group_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_whatsapp_log_manager" model="ir.model.access">
+        <field name="name">x_samra_whatsapp_log.manager</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_whatsapp_log')]"/>
+        <field name="group_id" ref="sales_team.group_sale_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="access_samra_customer_transfer" model="ir.model.access">
+        <field name="name">samra.customer.transfer.manager</field>
+        <field name="model_id" search="[('model', '=', 'samra.customer.transfer')]"/>
+        <field name="group_id" ref="sales_team.group_sale_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+</odoo>
