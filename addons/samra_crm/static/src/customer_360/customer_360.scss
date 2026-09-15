@@ -544,3 +544,233 @@
         .samra-name   { font-size: 22px; }
     }
 }
+
+// ====================================================================
+// Showing-room capture
+//
+// Sized for a thumb on an iPad held in one hand while the other holds a
+// tray: targets are large, the tray is always visible, and saving is a
+// single action at the end rather than a form per item.
+// ====================================================================
+.samra-360 {
+
+    .samra-action--primary {
+        color: #fff;
+        background: var(--samra-gold);
+        border-color: var(--samra-gold);
+
+        &:hover {
+            color: #fff;
+            background: var(--samra-gold-lift);
+            border-color: var(--samra-gold-lift);
+        }
+
+        &:disabled { opacity: 0.45; cursor: not-allowed; }
+    }
+
+    .samra-action:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .samra-capture {
+        position: fixed;
+        inset: 0;
+        z-index: 1050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(26, 22, 20, 0.45);
+    }
+
+    .samra-capture__sheet {
+        display: flex;
+        flex-direction: column;
+        width: min(760px, 100%);
+        max-height: min(88vh, 760px);
+        padding: 20px 22px;
+        background: var(--samra-surface);
+        border-radius: 6px;
+        border-top: 2px solid var(--samra-gold);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    .samra-capture__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+
+        h2 {
+            margin: 0;
+            font-family: var(--samra-display);
+            font-size: 18px;
+            font-weight: 400;
+        }
+
+        p {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: var(--samra-ink-faint);
+        }
+    }
+
+    .samra-capture__close {
+        flex: 0 0 auto;
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        color: var(--samra-ink-soft);
+        background: none;
+        border: 0;
+        border-radius: 3px;
+
+        &:hover { background: rgba(26, 22, 20, 0.06); }
+    }
+
+    .samra-capture__input {
+        width: 100%;
+        height: 46px;
+        margin-top: 14px;
+        padding: 0 14px;
+        font-size: 15px;
+        color: var(--samra-ink);
+        background: var(--samra-surface);
+        border: 1px solid var(--samra-line-firm);
+        border-radius: var(--samra-radius);
+
+        &:focus {
+            outline: none;
+            border-color: var(--samra-gold);
+            box-shadow: 0 0 0 3px rgba(168, 132, 44, 0.18);
+        }
+    }
+
+    // The tray is the running record of what has been shown, so it stays on
+    // screen — an associate should never wonder whether a scan registered.
+    .samra-tray {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        padding: 10px;
+        background: var(--samra-gold-wash);
+        border-radius: var(--samra-radius);
+    }
+
+    .samra-tray__label {
+        @include samra-label;
+        color: var(--samra-gold);
+    }
+
+    .samra-tray__item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 4px 4px 10px;
+        font-size: 12px;
+        background: var(--samra-surface);
+        border: 1px solid rgba(168, 132, 44, 0.35);
+        border-radius: 999px;
+
+        button {
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            color: var(--samra-ink-faint);
+            background: none;
+            border: 0;
+            border-radius: 50%;
+
+            &:hover { background: rgba(26, 22, 20, 0.08); color: var(--samra-danger); }
+        }
+    }
+
+    .samra-capture__results {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+        padding: 2px;
+    }
+
+    .samra-pick {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px;
+        text-align: left;
+        cursor: pointer;
+        background: var(--samra-surface);
+        border: 1px solid var(--samra-line);
+        border-radius: var(--samra-radius);
+        transition: border-color 0.12s ease;
+
+        img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 3px;
+            background: var(--samra-gold-wash);
+        }
+
+        &:hover { border-color: var(--samra-gold); }
+
+        // Already in the tray: a scan that repeats an item should look
+        // obviously handled rather than silently doing nothing.
+        &.is-picked {
+            border-color: var(--samra-gold);
+            background: var(--samra-gold-wash);
+            box-shadow: inset 0 0 0 1px var(--samra-gold);
+        }
+    }
+
+    .samra-pick__name {
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .samra-pick__meta {
+        font-size: 11px;
+        color: var(--samra-ink-faint);
+    }
+
+    .samra-capture__msg {
+        margin-top: 12px;
+        padding: 9px 12px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--samra-good);
+        background: var(--samra-good-wash);
+        border-radius: var(--samra-radius);
+    }
+
+    .samra-capture__foot {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid var(--samra-line);
+    }
+
+    @media (max-width: 767px) {
+        .samra-capture { padding: 0; align-items: stretch; }
+
+        .samra-capture__sheet {
+            width: 100%;
+            max-height: none;
+            border-radius: 0;
+        }
+
+        .samra-capture__results { grid-template-columns: repeat(2, 1fr); }
+        .samra-capture__foot .samra-action { flex: 1 1 auto; justify-content: center; }
+    }
+}

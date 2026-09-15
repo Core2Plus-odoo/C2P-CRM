@@ -196,6 +196,100 @@ class ResPartner(models.Model):
             'created': fields.Date.to_string(ticket.create_date) if ticket.create_date else None,
         } for ticket in tickets]
 
+    # ------------------------------------------------------------------
+    # Showing-room capture
+    # ------------------------------------------------------------------
+
+    def _samra_default_branch(self):
+        """The branch the logged-in associate is standing in.
+
+        Taken from their default warehouse, falling back to the company's
+        first. An associate should never have to tell the system where they
+        are -- they are holding a tray.
+        """
+        user = self.env.user
+        warehouse = self.env['stock.warehouse']
+        if 'property_warehouse_id' in user._fields:
+            warehouse = user.property_warehouse_id
+        if not warehouse:
+            warehouse = warehouse.search(
+                [('company_id', '=', self.env.company.id)], limit=1)
+        return warehouse
+
+    def samra_search_products(self, query, limit=24):
+        """Product lookup for the capture panel.
+
+        Matches on name, internal reference and barcode in one pass, so a
+        scanner gun and a typed fragment go down the same path -- the scanner
+        just types faster.
+        """
+        self.ensure_one()
+        query = (query or '').strip()
+        domain = [('sale_ok', '=', True)]
+        if query:
+            domain += ['|', '|',
+                       ('name', 'ilike', query),
+                       ('default_code', 'ilike', query),
+                       ('barcode', '=', query)]
+
+        products = self.env['product.product'].search(domain, limit=limit)
+        return [{
+            'id': product.id,
+            'name': product.display_name,
+            'sku': product.default_code or '',
+            'price': product.list_price,
+        } for product in products]
+
+    def samra_log_viewed(self, product_ids, to_wishlist=False):
+        """Record a tray of products in one write.
+
+        Called once when the associate finishes showing, not once per item:
+        `x_view_date` and `x_branch_id` are filled in from the clock and the
+        user's branch rather than asked for. `to_wishlist` handles the natural
+        escalation -- the customer liked one -- without a second screen.
+        """
+        self.ensure_one()
+        product_ids = [int(pid) for pid in (product_ids or [])]
+        if not product_ids:
+            return {'viewed': 0, 'wishlisted': 0}
+
+        products = self.env['product.product'].browse(product_ids).exists()
+        branch = self._samra_default_branch()
+        now = fields.Datetime.now()
+
+        self.env['x_samra_viewed_product'].create([{
+            'x_name': product.display_name,
+            'x_partner_id': self.id,
+            'x_product_id': product.id,
+            'x_view_date': now,
+            'x_branch_id': branch.id or False,
+        } for product in products])
+
+        wishlisted = 0
+        if to_wishlist:
+            # Don't duplicate something already on the wishlist -- an associate
+            # showing a piece twice shouldn't create two entries.
+            existing = self.env['x_samra_wishlist'].search([
+                ('x_partner_id', '=', self.id),
+                ('x_product_id', 'in', products.ids),
+            ]).mapped('x_product_id').ids
+            fresh = products.filtered(lambda p: p.id not in existing)
+            if fresh:
+                self.env['x_samra_wishlist'].create([{
+                    'x_name': product.display_name,
+                    'x_partner_id': self.id,
+                    'x_product_id': product.id,
+                    'x_price': product.list_price,
+                    'x_date_added': fields.Date.context_today(self),
+                } for product in fresh])
+            wishlisted = len(fresh)
+
+        return {
+            'viewed': len(products),
+            'wishlisted': wishlisted,
+            'branch': branch.display_name or '',
+        }
+
     def get_samra_profile(self):
         """Everything the 360 profile renders, in a single round trip.
 
@@ -257,4 +351,5 @@ class ResPartner(models.Model):
             'tickets': self._samra_tickets(),
             'currency': self.env.company.currency_id.name or 'AED',
             'at_risk_days': AT_RISK_DAYS,
+            'capture_branch': self._samra_default_branch().display_name or '',
         }

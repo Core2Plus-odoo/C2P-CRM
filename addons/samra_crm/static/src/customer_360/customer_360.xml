@@ -67,6 +67,9 @@
                     <a class="samra-action" t-if="mailHref" t-att-href="mailHref" title="Email">
                         <i class="fa fa-envelope"/><span>Email</span>
                     </a>
+                    <button class="samra-action samra-action--primary" t-on-click="openCapture">
+                        <i class="fa fa-diamond"/><span>Showing Products</span>
+                    </button>
                     <button class="samra-action samra-action--ghost" t-on-click="openContactForm">
                         <i class="fa fa-pencil"/><span>Edit</span>
                     </button>
@@ -84,6 +87,80 @@
                     <i t-att-class="d.consent.sms ? 'fa fa-check' : 'fa fa-ban'"/>
                     SMS marketing
                 </span>
+            </div>
+
+            <!-- Showing-room capture -->
+            <div t-if="capture.open" class="samra-capture" role="dialog" aria-label="Record products shown">
+                <div class="samra-capture__sheet">
+                    <div class="samra-capture__head">
+                        <div>
+                            <h2>Showing Products</h2>
+                            <p>
+                                Scan or search, tap to add to the tray, save once when you are done.
+                                <t t-if="d.capture_branch">
+                                    Logged against <strong t-esc="d.capture_branch"/>.
+                                </t>
+                            </p>
+                        </div>
+                        <button class="samra-capture__close" t-on-click="closeCapture"
+                                aria-label="Close">×</button>
+                    </div>
+
+                    <input class="samra-capture__input"
+                           type="text"
+                           autofocus="autofocus"
+                           placeholder="Scan a tag or type a name / SKU…"
+                           t-on-input="onCaptureInput"
+                           t-on-keydown="onCaptureKeydown"/>
+
+                    <div t-if="capture.tray.length" class="samra-tray">
+                        <span class="samra-tray__label">
+                            Tray · <t t-esc="capture.tray.length"/>
+                        </span>
+                        <span class="samra-tray__item" t-foreach="capture.tray" t-as="item"
+                              t-key="item.id">
+                            <t t-esc="item.name"/>
+                            <button t-on-click="() => this.removeFromTray(item.id)"
+                                    aria-label="Remove">×</button>
+                        </span>
+                    </div>
+
+                    <div class="samra-capture__results">
+                        <div t-if="capture.searching" class="samra-empty">Searching…</div>
+                        <div t-elif="!capture.results.length" class="samra-empty">
+                            No matching products.
+                        </div>
+                        <button t-else="" class="samra-pick"
+                                t-foreach="capture.results" t-as="product" t-key="product.id"
+                                t-att-class="'samra-pick' + (inTray(product.id) ? ' is-picked' : '')"
+                                t-on-click="() => this.addToTray(product)">
+                            <img t-att-src="productImage(product.id)" t-att-alt="product.name"/>
+                            <span class="samra-pick__name" t-esc="product.name"/>
+                            <span class="samra-pick__meta">
+                                <t t-if="product.sku"><t t-esc="product.sku"/> · </t>
+                                <t t-esc="money(product.price)"/>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div t-if="capture.message" class="samra-capture__msg" t-esc="capture.message"/>
+
+                    <div class="samra-capture__foot">
+                        <button class="samra-action samra-action--ghost" t-on-click="closeCapture">
+                            Done
+                        </button>
+                        <button class="samra-action"
+                                t-att-disabled="!capture.tray.length or capture.saving"
+                                t-on-click="() => this.saveCapture(false)">
+                            Log as shown
+                        </button>
+                        <button class="samra-action samra-action--primary"
+                                t-att-disabled="!capture.tray.length or capture.saving"
+                                t-on-click="() => this.saveCapture(true)">
+                            Log + add to wishlist
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- ============ At-a-glance stats ============ -->
