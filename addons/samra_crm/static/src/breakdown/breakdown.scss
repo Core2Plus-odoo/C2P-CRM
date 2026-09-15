@@ -7,7 +7,7 @@
     padding: 22px 28px 40px;
     background: var(--samra-ground);
     color: var(--samra-ink);
-    font-size: 13px;
+    font-size: 13.5px;
 
     * { box-sizing: border-box; }
     .samra-num { font-variant-numeric: tabular-nums; }
@@ -41,11 +41,11 @@
 
     .samra-bk__back {
         padding: 0;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 600;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: var(--samra-gold);
+        color: var(--samra-gold-text);
         background: none;
         border: 0;
         cursor: pointer;
@@ -161,7 +161,7 @@
         background: var(--samra-track);
         color: var(--samra-ink-soft);
 
-        &--vip { color: var(--samra-gold); background: var(--samra-gold-wash); }
+        &--vip { color: var(--samra-gold-text); background: var(--samra-gold-wash); }
 
         &--vvip {
             color: var(--samra-on-gold);
@@ -171,7 +171,7 @@
 
     .samra-bk__note {
         margin: 10px 14px;
-        font-size: 11px;
+        font-size: 11.5px;
         font-style: italic;
         color: var(--samra-ink-faint);
     }
