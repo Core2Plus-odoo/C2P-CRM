@@ -208,6 +208,41 @@ class SamraDashboard(models.AbstractModel):
         }
 
 
+    @api.model
+    def _top_clients(self, domain, limit=8):
+        """The customers behind the revenue, each a way into their dossier.
+
+        The dashboard otherwise reports entirely in aggregate -- revenue by
+        branch, by salesperson, by tier -- and never names a person. A manager
+        looking at a good month wants to know who made it, and clicking the
+        answer should land on that customer's profile rather than a list.
+        """
+        groups = self.env['sale.order']._read_group(
+            domain, ['partner_id'], ['amount_total:sum', '__count'])
+
+        ranked = sorted(groups, key=lambda row: row[1] or 0.0, reverse=True)[:limit]
+        peak = max((row[1] or 0.0 for row in ranked), default=0.0)
+        today = fields.Date.today()
+
+        rows = []
+        for partner, total, count in ranked:
+            revenue = total or 0.0
+            last = partner.x_last_purchase_date
+            rows.append({
+                'id': partner.id,
+                'name': partner.display_name,
+                'avatar': f'/web/image/res.partner/{partner.id}/avatar_128',
+                'tier': partner.x_vip_tier or 'regular',
+                'tier_label': VIP_TIER_LABELS.get(partner.x_vip_tier or 'regular', 'Regular'),
+                'revenue': revenue,
+                'orders': count,
+                'share': (revenue / peak * 100) if peak else 0.0,
+                'last_purchase': fields.Date.to_string(last) if last else None,
+                'days_inactive': (today - last).days if last else None,
+                'at_risk': bool(last) and (today - last).days >= INACTIVE_DAYS,
+            })
+        return rows
+
     # ------------------------------------------------------------------
     # Drill-down
     # ------------------------------------------------------------------
@@ -381,6 +416,7 @@ class SamraDashboard(models.AbstractModel):
             'currency': self.env.company.currency_id.name or 'AED',
             'kpis': self._kpis(domain),
             'branches': self._by_branch(domain),
+            'top_clients': self._top_clients(domain),
             'salespeople': self._by_salesperson(domain),
             'vip': self._by_vip_tier(domain),
             'pipeline': self._pipeline(filters),

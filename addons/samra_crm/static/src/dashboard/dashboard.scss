@@ -448,3 +448,108 @@
         .samra-table { display: block; overflow-x: auto; white-space: nowrap; }
     }
 }
+
+// ====================================================================
+// Top clients
+//
+// The dashboard reports in aggregate everywhere else. This is the one
+// panel that names people, and every row is a way into their dossier.
+// ====================================================================
+.samra-dash {
+
+    .samra-clients {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        > li + li { margin-top: 2px; }
+
+        button {
+            display: grid;
+            grid-template-columns: 30px minmax(0, 1.5fr) auto minmax(80px, 1fr) 96px auto;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 7px 8px;
+            text-align: left;
+            background: none;
+            border: 0;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+
+            &:hover { background: var(--samra-gold-wash); }
+            &:focus-visible { outline: 2px solid var(--samra-gold); outline-offset: -2px; }
+        }
+    }
+
+    .samra-clients__av {
+        width: 30px;
+        height: 30px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 1px solid var(--samra-line);
+        background: var(--samra-gold-wash);
+    }
+
+    .samra-clients__name {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        font-size: 12.5px;
+        font-weight: 600;
+
+        small {
+            font-size: 10.5px;
+            font-weight: 400;
+            color: var(--samra-ink-faint);
+        }
+    }
+
+    .samra-clients__track {
+        height: 6px;
+        border-radius: 999px;
+        background: var(--samra-track);
+        overflow: hidden;
+    }
+
+    .samra-clients__fill {
+        display: block;
+        height: 100%;
+        min-width: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--samra-gold) 0%, var(--samra-gold-lift) 100%);
+    }
+
+    .samra-clients__val {
+        font-size: 12.5px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .samra-clients__flag {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--samra-danger);
+    }
+
+    @media (max-width: 900px) {
+        .samra-clients button {
+            grid-template-columns: 30px minmax(0, 1fr) auto;
+            grid-template-areas:
+                "av name tier"
+                "track track track"
+                "val val flag";
+            gap: 5px 10px;
+        }
+
+        .samra-clients__av { grid-area: av; }
+        .samra-clients__name { grid-area: name; }
+        .samra-chip { grid-area: tier; }
+        .samra-clients__track { grid-area: track; }
+        .samra-clients__val { grid-area: val; text-align: left; }
+        .samra-clients__flag { grid-area: flag; text-align: right; }
+    }
+}

@@ -123,6 +123,17 @@ export class SamraDashboard extends Component {
         return `${Number(value || 0).toFixed(1)}%`;
     }
 
+    formatDate(value) {
+        if (!value) {
+            return "—";
+        }
+        const parsed = new Date(value.replace(" ", "T"));
+        if (Number.isNaN(parsed.getTime())) {
+            return value;
+        }
+        return parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+    }
+
     /** Bar width relative to the largest value in the same series. */
     share(value, rows, key = "revenue") {
         const peak = Math.max(...rows.map((row) => Number(row[key] || 0)), 0);

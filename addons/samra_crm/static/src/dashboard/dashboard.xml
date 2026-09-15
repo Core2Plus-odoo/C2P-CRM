@@ -156,6 +156,39 @@
                     </ul>
                 </section>
 
+                <!-- ============ Top clients ============ -->
+                <section class="samra-panel samra-panel--wide" t-if="d.top_clients.length">
+                    <div class="samra-panel__head">
+                        <h2>Top Clients</h2>
+                        <span class="samra-panel__note">Opens the client dossier</span>
+                    </div>
+                    <ul class="samra-clients">
+                        <li t-foreach="d.top_clients" t-as="client" t-key="client.id">
+                            <button t-on-click="() => this.openCustomerProfile(client.id)">
+                                <img class="samra-clients__av" t-att-src="client.avatar"
+                                     t-att-alt="client.name"/>
+                                <span class="samra-clients__name">
+                                    <t t-esc="client.name"/>
+                                    <small>
+                                        <t t-esc="client.orders"/> orders
+                                        <t t-if="client.days_inactive !== null">
+                                            · last <t t-esc="formatDate(client.last_purchase)"/>
+                                        </t>
+                                    </small>
+                                </span>
+                                <span t-att-class="'samra-chip samra-chip--' + client.tier"
+                                      t-esc="client.tier_label"/>
+                                <span class="samra-clients__track">
+                                    <span class="samra-clients__fill"
+                                          t-attf-style="width: {{ client.share }}%"/>
+                                </span>
+                                <span class="samra-clients__val" t-esc="money(client.revenue)"/>
+                                <span class="samra-clients__flag" t-if="client.at_risk">at risk</span>
+                            </button>
+                        </li>
+                    </ul>
+                </section>
+
                 <!-- ============ Salesperson KPIs ============ -->
                 <section class="samra-panel samra-panel--wide">
                     <div class="samra-panel__head">
