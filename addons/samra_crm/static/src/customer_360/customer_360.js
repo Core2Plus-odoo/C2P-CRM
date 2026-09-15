@@ -254,12 +254,13 @@ export class SamraCustomer360 extends Component {
     // --- quick actions ----------------------------------------------
 
     get telHref() {
-        const number = this.state.data?.mobile || this.state.data?.phone;
+        const number = this.state.data?.phone;
         return number ? `tel:${number.replace(/\s+/g, "")}` : null;
     }
 
     get whatsappHref() {
-        const number = this.state.data?.mobile || this.state.data?.phone;
+        // Odoo 19 folded res.partner.mobile into phone; there is one number.
+        const number = this.state.data?.phone;
         if (!number) {
             return null;
         }

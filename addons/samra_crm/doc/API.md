@@ -53,7 +53,6 @@ curl -H "X-API-Key: $SAMRA_API_KEY" \
   "name": "Mona Al Habtoor",
   "email": "mona@example.com",
   "phone": "+971 4 000 0000",
-  "mobile": "+971 50 000 0000",
   "city": "Dubai",
   "nationality": "United Arab Emirates",
   "vip_tier": "vvip",
