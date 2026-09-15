@@ -399,6 +399,55 @@
             color: #fff;
             background: linear-gradient(100deg, var(--samra-gold) 0%, var(--samra-gold-lift) 100%);
         }
+
+        // Occasion countdown. Urgency is carried by weight and colour rather
+        // than by a second shape, so the chip still reads as one family.
+        &--due {
+            color: var(--samra-on-gold);
+            background: var(--samra-gold);
+        }
+
+        &--soon {
+            color: var(--samra-gold-text);
+            background: var(--samra-gold-wash);
+        }
+    }
+
+    // A quiet secondary marker inside a table cell -- a consent flag or a
+    // channel, never a value the column is sorted on.
+    .samra-table__hint {
+        margin-left: 6px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--samra-ink-faint);
+    }
+
+    // Keeps a panel title and its note together when the head also carries an
+    // action, which space-between would otherwise push apart.
+    .samra-panel__lead {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    // "Open list" on a panel head: a link in weight, a button in behaviour.
+    .samra-panel__more {
+        margin-left: auto;
+        padding: 2px 8px;
+        border: 1px solid var(--samra-line);
+        border-radius: 2px;
+        background: transparent;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--samra-ink-soft);
+        cursor: pointer;
+
+        &:hover {
+            border-color: var(--samra-gold);
+            color: var(--samra-gold-text);
+        }
     }
 
     // ---------- mini stats ----------

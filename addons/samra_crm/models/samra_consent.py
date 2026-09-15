@@ -44,10 +44,7 @@ class ResPartnerConsent(models.Model):
         False -- which is the right default. Silence is not consent.
         """
         field = self._samra_consent_field(channel)
-        return (base_domain or []) + [
-            ('customer_rank', '>', 0),
-            (field, '=', True),
-        ]
+        return self._samra_customer_domain(base_domain) + [(field, '=', True)]
 
     @api.model
     def samra_marketing_audience(self, channel, base_domain=None):
@@ -59,7 +56,7 @@ class ResPartnerConsent(models.Model):
         """
         domain = self._samra_marketing_domain(channel, base_domain)
         eligible = self.search(domain)
-        everyone = self.search_count((base_domain or []) + [('customer_rank', '>', 0)])
+        everyone = self.search_count(self._samra_customer_domain(base_domain))
         return {
             'channel': channel,
             'reachable': len(eligible),

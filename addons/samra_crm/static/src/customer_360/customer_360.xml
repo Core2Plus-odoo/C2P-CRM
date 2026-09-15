@@ -54,6 +54,11 @@
                             <span class="samra-fact" t-if="d.anniversary">
                                 <span>Anniversary</span><b t-esc="formatDate(d.anniversary)"/>
                             </span>
+                            <span class="samra-fact samra-fact--flag"
+                                  t-if="d.next_occasion and d.next_occasion.date">
+                                <span>Next occasion</span>
+                                <b t-esc="occasionSummary(d.next_occasion)"/>
+                            </span>
                             <span class="samra-fact" t-if="d.phone">
                                 <span>Phone</span><b class="samra-num" t-esc="d.phone"/>
                             </span>

@@ -160,6 +160,14 @@
 
         > span { @include samra-label; }
         b { font-weight: 500; }
+
+        // The one fact in the strip that is about to expire. Gold on the
+        // value only -- a whole highlighted pill would outrank the tier badge
+        // sitting a few pixels away, which is the more important signal.
+        &--flag b {
+            font-weight: 700;
+            color: var(--samra-gold-text);
+        }
     }
 
     .samra-acts {

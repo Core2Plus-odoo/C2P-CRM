@@ -262,6 +262,66 @@
                     </table>
                 </section>
 
+                <!-- ============ Upcoming Occasions ============ -->
+                <section class="samra-panel samra-panel--wide">
+                    <div class="samra-panel__head">
+                        <div class="samra-panel__lead">
+                            <h2>Upcoming Occasions</h2>
+                            <span class="samra-panel__note">
+                                Birthdays and anniversaries in the next
+                                <t t-esc="d.occasions.days"/> days —
+                                <t t-esc="d.occasions.count"/> in total
+                            </span>
+                        </div>
+                        <button class="samra-panel__more"
+                                t-on-click="() => this.drillCustomers(d.occasions.domain, 'Upcoming Occasions')">
+                            Open list
+                        </button>
+                    </div>
+                    <div t-if="!d.occasions.occasions.length" class="samra-empty">
+                        No birthdays or anniversaries recorded in this window.
+                    </div>
+                    <table t-else="" class="samra-table">
+                        <thead>
+                            <tr>
+                                <th>When</th>
+                                <th>Occasion</th>
+                                <th>Customer</th>
+                                <th>Tier</th>
+                                <th class="is-num">Lifetime Value</th>
+                                <th class="is-num">Wishlist</th>
+                                <th>Last Purchase</th>
+                                <th>Salesperson</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="d.occasions.occasions" t-as="row" t-key="row.id"
+                                t-on-click="() => this.openCustomerProfile(row.id)">
+                                <td>
+                                    <span t-att-class="occasionUrgency(row)"
+                                          t-esc="occasionWhen(row)"/>
+                                </td>
+                                <td t-esc="row.label"/>
+                                <td>
+                                    <t t-esc="row.name"/>
+                                    <span t-if="row.whatsapp_consent"
+                                          class="samra-table__hint" title="WhatsApp consented">·  WA</span>
+                                </td>
+                                <td>
+                                    <span t-att-class="'samra-chip samra-chip--' + row.vip_tier"
+                                          t-esc="row.vip_tier.toUpperCase()"/>
+                                </td>
+                                <td class="is-num" t-esc="money(row.lifetime_value)"/>
+                                <td class="is-num">
+                                    <t t-esc="row.wishlist_count"/>
+                                </td>
+                                <td t-esc="formatDate(row.last_purchase)"/>
+                                <td t-esc="row.salesperson or '—'"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
                 <!-- ============ Loyalty ============ -->
                 <section class="samra-panel" t-if="d.loyalty.available">
                     <div class="samra-panel__head">

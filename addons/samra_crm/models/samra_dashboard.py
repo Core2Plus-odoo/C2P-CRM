@@ -111,10 +111,11 @@ class SamraDashboard(models.AbstractModel):
             revenue[tier] += total or 0.0
             orders[tier] += count
 
+        Partner = self.env['res.partner']
         headcount = {
             (tier or 'regular'): count
-            for tier, count in self.env['res.partner']._read_group(
-                [('customer_rank', '>', 0)], ['x_vip_tier'], ['__count'])
+            for tier, count in Partner._read_group(
+                Partner._samra_customer_domain(), ['x_vip_tier'], ['__count'])
         }
 
         total_revenue = sum(revenue.values())
@@ -125,9 +126,9 @@ class SamraDashboard(models.AbstractModel):
             'revenue': revenue[tier],
             'orders': orders[tier],
             'revenue_share': (revenue[tier] / total_revenue * 100) if total_revenue else 0.0,
-            'domain': [('customer_rank', '>', 0), ('x_vip_tier', '=', tier)]
-                      if tier != 'regular'
-                      else [('customer_rank', '>', 0), ('x_vip_tier', 'in', [False, 'regular'])],
+            'domain': Partner._samra_customer_domain(
+                [('x_vip_tier', '=', tier)] if tier != 'regular'
+                else [('x_vip_tier', 'in', [False, 'regular'])]),
         } for tier in VIP_TIER_ORDER]
 
     @api.model
@@ -159,12 +160,11 @@ class SamraDashboard(models.AbstractModel):
     def _reactivation(self):
         """Requirement 18/36: customers gone quiet, as an actionable list."""
         cutoff = fields.Date.today() - timedelta(days=INACTIVE_DAYS)
-        domain = [
-            ('customer_rank', '>', 0),
+        domain = self.env['res.partner']._samra_customer_domain([
             '|',
             ('x_last_purchase_date', '=', False),
             ('x_last_purchase_date', '<', fields.Date.to_string(cutoff)),
-        ]
+        ])
         partners = self.env['res.partner'].search(
             domain, order='x_lifetime_value desc', limit=15)
         today = fields.Date.today()
@@ -418,6 +418,10 @@ class SamraDashboard(models.AbstractModel):
             'vip': self._by_vip_tier(domain),
             'pipeline': self._pipeline(filters),
             'reactivation': self._reactivation(),
+            # Deliberately outside the period filter: an occasion is in the
+            # future, so narrowing it to the reporting window would empty the
+            # panel whenever somebody looked at last quarter.
+            'occasions': self.env['res.partner'].samra_upcoming_occasions(),
             'loyalty': self._loyalty(),
         }
 

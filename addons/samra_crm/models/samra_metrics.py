@@ -46,6 +46,49 @@ class ResPartnerMetrics(models.Model):
     )
 
     # ------------------------------------------------------------------
+    # Who counts as a customer
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _samra_customer_domain(self, extra=None):
+        """The customer base, defined structurally rather than by rank.
+
+        This used to be [('customer_rank', '>', 0)] in seven places, which was
+        wrong on this database and silently so. customer_rank is only ever
+        incremented by Odoo's own sale flow -- sale.order._increase_rank on
+        confirmation. A contact created by import, by Studio, at the POS till
+        or by hand is a customer to everybody in the shop and rank 0 to the
+        ORM. Samra's address book was built exactly that way, so the domain
+        matched nothing at all: the nightly metrics run found zero partners,
+        no lifetime value was ever written, and therefore nobody was ever
+        tiered. Every figure downstream of that read as a legitimate zero.
+
+        So identify a customer by what the record is, not by what the sale
+        flow happened to record about it:
+
+          * type == 'contact' drops invoice, delivery and other address rows,
+            which are not people you sell to, while keeping both individuals
+            and companies.
+          * The negated user_ids.share leaf excludes partners attached to an
+            internal user -- staff, in other words. Written as a negation so
+            that partners with no user at all still pass; ('user_ids', '=',
+            False) would have thrown out every portal customer.
+          * The last clause keeps anyone who has ever bought (rank > 0) and
+            anyone who is not a known vendor. A pure supplier is excluded; a
+            supplier who also buys is not.
+
+        This is deliberately broader than rank. On an address book that is
+        overwhelmingly retail customers that is the right trade: counting a
+        few non-buying contacts as customers understates average spend a
+        little, where the old domain reported nothing at all.
+        """
+        return (extra or []) + [
+            ('type', '=', 'contact'),
+            '!', ('user_ids.share', '=', False),
+            '|', ('customer_rank', '>', 0), ('supplier_rank', '=', 0),
+        ]
+
+    # ------------------------------------------------------------------
     # Thresholds
     # ------------------------------------------------------------------
 
@@ -135,7 +178,7 @@ class ResPartnerMetrics(models.Model):
         reactivation list.
         """
         vip, vvip = self._samra_tier_thresholds()
-        partners = self.search([('customer_rank', '>', 0)])
+        partners = self.search(self._samra_customer_domain())
         _logger.info("Samra CRM: recomputing metrics for %s customers", len(partners))
 
         updated = 0
@@ -143,6 +186,10 @@ class ResPartnerMetrics(models.Model):
             batch = partners[index:index + BATCH_SIZE]
             metrics = self._samra_purchase_metrics(batch)
             updated += batch._samra_apply_metrics(metrics, vip, vvip)
+            # Birthdays and anniversaries are projected against today, so they
+            # need re-projecting whenever the calendar turns. Same pass, same
+            # partner set -- no second walk over the address book.
+            batch._samra_refresh_occasions()
             self.env.cr.commit()
 
         _logger.info("Samra CRM: %s customer(s) updated", updated)
@@ -153,4 +200,5 @@ class ResPartnerMetrics(models.Model):
         vip, vvip = self._samra_tier_thresholds()
         metrics = self._samra_purchase_metrics(self)
         self._samra_apply_metrics(metrics, vip, vvip)
+        self._samra_refresh_occasions()
         return True
