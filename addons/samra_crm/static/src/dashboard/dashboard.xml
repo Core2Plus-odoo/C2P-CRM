@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="samra_crm.Dashboard">
+    <div class="samra-dash">
+
+        <header class="samra-dash__bar">
+            <h1>Management Dashboard</h1>
+
+            <div class="samra-dash__filters">
+                <label>
+                    <span>From</span>
+                    <input type="date" t-att-value="state.filters.date_from"
+                           t-on-change="(ev) => this.onFilterChange('date_from', ev)"/>
+                </label>
+                <label>
+                    <span>To</span>
+                    <input type="date" t-att-value="state.filters.date_to"
+                           t-on-change="(ev) => this.onFilterChange('date_to', ev)"/>
+                </label>
+                <label>
+                    <span>Branch</span>
+                    <select t-on-change="(ev) => this.onFilterChange('warehouse_id', ev)">
+                        <option value="">All branches</option>
+                        <option t-foreach="state.options.branches" t-as="branch" t-key="branch.id"
+                                t-att-value="branch.id"
+                                t-att-selected="String(branch.id) === String(state.filters.warehouse_id)"
+                                t-esc="branch.name"/>
+                    </select>
+                </label>
+                <label>
+                    <span>Salesperson</span>
+                    <select t-on-change="(ev) => this.onFilterChange('user_id', ev)">
+                        <option value="">Everyone</option>
+                        <option t-foreach="state.options.salespeople" t-as="person" t-key="person.id"
+                                t-att-value="person.id"
+                                t-att-selected="String(person.id) === String(state.filters.user_id)"
+                                t-esc="person.name"/>
+                    </select>
+                </label>
+                <button class="samra-dash__reset" t-on-click="resetFilters">Reset</button>
+            </div>
+        </header>
+
+        <div t-if="state.loading" class="samra-placeholder">
+            <span class="samra-spinner"/>
+            <p>Loading…</p>
+        </div>
+
+        <div t-elif="state.error" class="samra-placeholder samra-placeholder--error">
+            <p t-esc="state.error"/>
+        </div>
+
+        <t t-else="">
+            <t t-set="d" t-value="state.data"/>
+
+            <!-- ============ Headline KPIs ============ -->
+            <section class="samra-kpis">
+                <button class="samra-kpi"
+                        t-on-click="() => this.drillOrders(d.kpis.domain, 'Revenue')">
+                    <span class="samra-kpi__label">Revenue</span>
+                    <span class="samra-kpi__value" t-esc="money(d.kpis.revenue)"/>
+                    <span class="samra-kpi__hint">View orders</span>
+                </button>
+                <button class="samra-kpi"
+                        t-on-click="() => this.drillOrders(d.kpis.domain, 'Orders')">
+                    <span class="samra-kpi__label">Orders</span>
+                    <span class="samra-kpi__value" t-esc="d.kpis.orders.toLocaleString()"/>
+                    <span class="samra-kpi__hint">View orders</span>
+                </button>
+                <button class="samra-kpi"
+                        t-on-click="() => this.drillOrders(d.kpis.domain, 'Orders')">
+                    <span class="samra-kpi__label">Average Order Value</span>
+                    <span class="samra-kpi__value" t-esc="money(d.kpis.average_order_value)"/>
+                    <span class="samra-kpi__hint">View orders</span>
+                </button>
+                <button class="samra-kpi samra-kpi--alert"
+                        t-on-click="() => this.drillCustomers(d.reactivation.domain, 'Inactive Customers')">
+                    <span class="samra-kpi__label">
+                        Inactive <t t-esc="d.reactivation.cutoff_days"/>d+
+                    </span>
+                    <span class="samra-kpi__value" t-esc="d.reactivation.count.toLocaleString()"/>
+                    <span class="samra-kpi__hint">Reactivate</span>
+                </button>
+            </section>
+
+            <div class="samra-dash__grid">
+
+                <!-- ============ Pipeline funnel ============ -->
+                <section class="samra-panel samra-panel--wide">
+                    <div class="samra-panel__head">
+                        <h2>Pipeline</h2>
+                        <span class="samra-panel__note">Click a stage to open its leads</span>
+                    </div>
+                    <div t-if="!d.pipeline.length" class="samra-empty">No open opportunities.</div>
+                    <ul t-else="" class="samra-funnel">
+                        <li t-foreach="d.pipeline" t-as="stage" t-key="stage.id">
+                            <button t-on-click="() => this.drillLeads(stage.domain, stage.label)">
+                                <span class="samra-funnel__name" t-esc="stage.label"/>
+                                <span class="samra-funnel__track">
+                                    <span class="samra-funnel__fill"
+                                          t-attf-style="width: {{ stage.width }}%"/>
+                                </span>
+                                <span class="samra-funnel__count" t-esc="stage.leads"/>
+                                <span class="samra-funnel__value"
+                                      t-esc="money(stage.expected_revenue, true)"/>
+                            </button>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- ============ VIP composition ============ -->
+                <section class="samra-panel">
+                    <div class="samra-panel__head">
+                        <h2>VIP Composition</h2>
+                    </div>
+                    <ul class="samra-tiers">
+                        <li t-foreach="d.vip" t-as="tier" t-key="tier.tier"
+                            t-att-class="'samra-tiers__row samra-tiers__row--' + tier.tier">
+                            <button t-on-click="() => this.drillCustomers(tier.domain, tier.label + ' Customers')">
+                                <div class="samra-tiers__top">
+                                    <span class="samra-tiers__name" t-esc="tier.label"/>
+                                    <span class="samra-tiers__share" t-esc="percent(tier.revenue_share)"/>
+                                </div>
+                                <span class="samra-tiers__track">
+                                    <span class="samra-tiers__fill"
+                                          t-attf-style="width: {{ tier.revenue_share }}%"/>
+                                </span>
+                                <div class="samra-tiers__meta">
+                                    <span><t t-esc="tier.customers"/> customers</span>
+                                    <span t-esc="money(tier.revenue, true)"/>
+                                </div>
+                            </button>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- ============ Branch performance ============ -->
+                <section class="samra-panel">
+                    <div class="samra-panel__head">
+                        <h2>Branch Performance</h2>
+                    </div>
+                    <div t-if="!d.branches.length" class="samra-empty">No orders in this period.</div>
+                    <ul t-else="" class="samra-bars">
+                        <li t-foreach="d.branches" t-as="branch" t-key="branch.id">
+                            <button t-on-click="() => this.drillOrders(branch.domain, branch.label)">
+                                <span class="samra-bars__name" t-esc="branch.label"/>
+                                <span class="samra-bars__track">
+                                    <span class="samra-bars__fill"
+                                          t-attf-style="width: {{ share(branch.revenue, d.branches) }}"/>
+                                </span>
+                                <span class="samra-bars__value" t-esc="money(branch.revenue, true)"/>
+                                <span class="samra-bars__sub"><t t-esc="branch.orders"/> ord.</span>
+                            </button>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- ============ Salesperson KPIs ============ -->
+                <section class="samra-panel samra-panel--wide">
+                    <div class="samra-panel__head">
+                        <h2>Salesperson Performance</h2>
+                        <span class="samra-panel__note">Click a row to open their orders</span>
+                    </div>
+                    <div t-if="!d.salespeople.length" class="samra-empty">No orders in this period.</div>
+                    <table t-else="" class="samra-table">
+                        <thead>
+                            <tr>
+                                <th>Salesperson</th>
+                                <th class="is-num">Revenue</th>
+                                <th class="is-num">Orders</th>
+                                <th class="is-num">Avg. Ticket</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="d.salespeople" t-as="person" t-key="person.id"
+                                t-on-click="() => this.drillOrders(person.domain, person.label)">
+                                <td t-esc="person.label"/>
+                                <td class="is-num" t-esc="money(person.revenue)"/>
+                                <td class="is-num" t-esc="person.orders"/>
+                                <td class="is-num" t-esc="money(person.average_order_value)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- ============ Reactivation ============ -->
+                <section class="samra-panel samra-panel--wide">
+                    <div class="samra-panel__head">
+                        <h2>Reactivation</h2>
+                        <span class="samra-panel__note">
+                            No purchase in <t t-esc="d.reactivation.cutoff_days"/>+ days — highest value first
+                        </span>
+                    </div>
+                    <div t-if="!d.reactivation.customers.length" class="samra-empty">
+                        Every customer has purchased recently.
+                    </div>
+                    <table t-else="" class="samra-table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Tier</th>
+                                <th class="is-num">Lifetime Value</th>
+                                <th class="is-num">Days Inactive</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="d.reactivation.customers" t-as="customer" t-key="customer.id"
+                                t-on-click="() => this.openCustomerProfile(customer.id)">
+                                <td t-esc="customer.name"/>
+                                <td>
+                                    <span t-att-class="'samra-chip samra-chip--' + customer.tier"
+                                          t-esc="customer.tier.toUpperCase()"/>
+                                </td>
+                                <td class="is-num" t-esc="money(customer.lifetime_value)"/>
+                                <td class="is-num">
+                                    <t t-if="customer.days_inactive !== null" t-esc="customer.days_inactive"/>
+                                    <t t-else="">never</t>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- ============ Loyalty ============ -->
+                <section class="samra-panel" t-if="d.loyalty.available">
+                    <div class="samra-panel__head">
+                        <h2>Loyalty Engagement</h2>
+                    </div>
+                    <div class="samra-mini">
+                        <div>
+                            <span class="samra-mini__label">Members</span>
+                            <span class="samra-mini__value" t-esc="d.loyalty.members.toLocaleString()"/>
+                        </div>
+                        <div>
+                            <span class="samra-mini__label">Points Outstanding</span>
+                            <span class="samra-mini__value"
+                                  t-esc="Math.round(d.loyalty.points_outstanding).toLocaleString()"/>
+                        </div>
+                        <div>
+                            <span class="samra-mini__label">Points Redeemed</span>
+                            <span class="samra-mini__value"
+                                  t-esc="Math.round(d.loyalty.points_redeemed).toLocaleString()"/>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </div>
+</t>
+
+</templates>

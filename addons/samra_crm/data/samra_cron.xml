@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Requirement 8: lifetime value and purchase frequency, kept current.
+         Runs nightly rather than on write: recomputing on every order
+         confirmation would put the cost on the till during trading hours. -->
+    <record id="ir_cron_samra_customer_metrics" model="ir.cron">
+        <field name="name">Samra CRM: Recompute Customer Metrics</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_recompute_customer_metrics()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- Tier thresholds live in system parameters so they can be retuned
+         without a code change. noupdate is load-bearing: without it every
+         module upgrade would silently reset a retuned threshold back to the
+         shipped default, and the next nightly run would re-tier customers
+         against a figure nobody chose. -->
+    <data noupdate="1">
+        <record id="param_samra_vip_threshold" model="ir.config_parameter">
+            <field name="key">samra_crm.vip_threshold</field>
+            <field name="value">100000</field>
+        </record>
+
+        <record id="param_samra_vvip_threshold" model="ir.config_parameter">
+            <field name="key">samra_crm.vvip_threshold</field>
+            <field name="value">300000</field>
+        </record>
+    </data>
+
+</odoo>

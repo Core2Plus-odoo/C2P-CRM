@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Wishlist -->
+    <record id="view_samra_wishlist_list" model="ir.ui.view">
+        <field name="name">x_samra_wishlist.list</field>
+        <field name="model">x_samra_wishlist</field>
+        <field name="arch" type="xml">
+            <list string="Wishlist Items">
+                <field name="x_partner_id"/>
+                <field name="x_product_id"/>
+                <field name="x_price"/>
+                <field name="x_date_added"/>
+                <field name="x_note"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_samra_wishlist_form" model="ir.ui.view">
+        <field name="name">x_samra_wishlist.form</field>
+        <field name="model">x_samra_wishlist</field>
+        <field name="arch" type="xml">
+            <form string="Wishlist Item">
+                <sheet>
+                    <group>
+                        <field name="x_name"/>
+                        <field name="x_partner_id"/>
+                        <field name="x_product_id"/>
+                        <field name="x_price"/>
+                        <field name="x_date_added"/>
+                        <field name="x_note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_samra_wishlist" model="ir.actions.act_window">
+        <field name="name">Wishlist Items</field>
+        <field name="res_model">x_samra_wishlist</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Viewed Products -->
+    <record id="view_samra_viewed_product_list" model="ir.ui.view">
+        <field name="name">x_samra_viewed_product.list</field>
+        <field name="model">x_samra_viewed_product</field>
+        <field name="arch" type="xml">
+            <list string="Viewed Products">
+                <field name="x_partner_id"/>
+                <field name="x_product_id"/>
+                <field name="x_view_date"/>
+                <field name="x_branch_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_samra_viewed_product_form" model="ir.ui.view">
+        <field name="name">x_samra_viewed_product.form</field>
+        <field name="model">x_samra_viewed_product</field>
+        <field name="arch" type="xml">
+            <form string="Viewed Product">
+                <sheet>
+                    <group>
+                        <field name="x_name"/>
+                        <field name="x_partner_id"/>
+                        <field name="x_product_id"/>
+                        <field name="x_view_date"/>
+                        <field name="x_branch_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_samra_viewed_product" model="ir.actions.act_window">
+        <field name="name">Viewed Products</field>
+        <field name="res_model">x_samra_viewed_product</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- WhatsApp Log -->
+    <record id="view_samra_whatsapp_log_list" model="ir.ui.view">
+        <field name="name">x_samra_whatsapp_log.list</field>
+        <field name="model">x_samra_whatsapp_log</field>
+        <field name="arch" type="xml">
+            <list string="WhatsApp Log">
+                <field name="x_partner_id"/>
+                <field name="x_direction"/>
+                <field name="x_message_type"/>
+                <field name="x_message_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_samra_whatsapp_log_form" model="ir.ui.view">
+        <field name="name">x_samra_whatsapp_log.form</field>
+        <field name="model">x_samra_whatsapp_log</field>
+        <field name="arch" type="xml">
+            <form string="WhatsApp Message">
+                <sheet>
+                    <group>
+                        <field name="x_name"/>
+                        <field name="x_partner_id"/>
+                        <field name="x_direction"/>
+                        <field name="x_message_type"/>
+                        <field name="x_product_id"/>
+                        <field name="x_message_date"/>
+                        <field name="x_content"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_samra_whatsapp_log" model="ir.actions.act_window">
+        <field name="name">WhatsApp Log</field>
+        <field name="res_model">x_samra_whatsapp_log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Top-level menu -->
+    <menuitem id="menu_samra_crm_root" name="Samra CRM" sequence="5"/>
+    <menuitem id="menu_samra_wishlist" name="Wishlist Items" parent="menu_samra_crm_root"
+              action="action_samra_wishlist" sequence="10"/>
+    <menuitem id="menu_samra_viewed_product" name="Viewed Products" parent="menu_samra_crm_root"
+              action="action_samra_viewed_product" sequence="20"/>
+    <menuitem id="menu_samra_whatsapp_log" name="WhatsApp Log" parent="menu_samra_crm_root"
+              action="action_samra_whatsapp_log" sequence="30"/>
+
+</odoo>
