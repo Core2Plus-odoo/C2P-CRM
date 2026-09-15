@@ -70,6 +70,16 @@ export class SamraCustomer360 extends Component {
         })}`;
     }
 
+    /** Whole points, formatted. Math is a global, so it cannot live in the template. */
+    points(value) {
+        return Math.round(Number(value) || 0).toLocaleString("en-AE");
+    }
+
+    get affordableRewards() {
+        const rewards = this.state.data?.loyalty?.rewards || [];
+        return rewards.filter((reward) => reward.affordable).length;
+    }
+
     formatDate(value) {
         if (!value) {
             return "—";

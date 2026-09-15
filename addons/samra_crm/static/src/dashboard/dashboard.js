@@ -109,6 +109,16 @@ export class SamraDashboard extends Component {
         })}`;
     }
 
+    /** Whole points, formatted. Math is a global, so it cannot live in the template. */
+    points(value) {
+        return Math.round(Number(value) || 0).toLocaleString("en-AE");
+    }
+
+    /** Compare loosely: option values arrive from the DOM as strings. */
+    isSelected(id, filterValue) {
+        return String(id) === String(filterValue);
+    }
+
     percent(value) {
         return `${Number(value || 0).toFixed(1)}%`;
     }

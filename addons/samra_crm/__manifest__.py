@@ -49,7 +49,13 @@ field types match exactly.
     ],
     'assets': {
         'web.assets_backend': [
-            'samra_crm/static/src/**/*',
+            # samra_theme defines the tokens and mixins the other stylesheets
+            # use. Odoo concatenates a bundle's SCSS into one compilation unit,
+            # so it must be listed first -- a glob would sort scss/ last and
+            # every @include would hit an undefined mixin.
+            'samra_crm/static/src/scss/samra_theme.scss',
+            'samra_crm/static/src/customer_360/**/*',
+            'samra_crm/static/src/dashboard/**/*',
         ],
     },
     'installable': True,
