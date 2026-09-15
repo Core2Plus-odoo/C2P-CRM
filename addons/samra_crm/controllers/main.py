@@ -104,7 +104,6 @@ class SamraAPI(http.Controller):
             'name': profile['name'],
             'email': profile['email'],
             'phone': profile['phone'],
-            'mobile': profile['mobile'],
             'city': profile['city'],
             'nationality': profile['nationality'],
             'vip_tier': profile['vip_tier'],

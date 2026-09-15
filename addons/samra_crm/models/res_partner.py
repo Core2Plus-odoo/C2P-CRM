@@ -311,7 +311,6 @@ class ResPartner(models.Model):
             'salesperson_id': self.user_id.id,
             'email': self.email or '',
             'phone': self.phone or '',
-            'mobile': self.mobile or self.phone or '',
             'city': self.city or '',
             'tags': [{'id': tag.id, 'name': tag.name, 'color': tag.color} for tag in self.category_id],
             'anniversary': fields.Date.to_string(self.x_anniversary) if self.x_anniversary else None,
