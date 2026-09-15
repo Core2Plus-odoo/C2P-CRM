@@ -256,6 +256,10 @@ export class SamraDashboard extends Component {
         this.drill("customers", domain, name || "Customers");
     }
 
+    drillOccasions(domain, name) {
+        this.drill("occasions", domain, name || "Upcoming Occasions");
+    }
+
     openCustomerProfile(partnerId) {
         this.action.doAction({
             type: "ir.actions.client",

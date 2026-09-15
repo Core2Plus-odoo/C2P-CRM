@@ -25,7 +25,7 @@
         <field name="priority">99</field>
         <field name="arch" type="xml">
             <list string="Upcoming Occasions" default_order="x_next_occasion_date asc"
-                  create="false" sample="1">
+                  create="false" sample="1" js_class="samra_occasion_list">
                 <field name="x_next_occasion_date" string="Date"/>
                 <field name="x_days_to_occasion" string="In (days)"
                        decoration-danger="x_days_to_occasion &lt;= 3"
@@ -58,7 +58,8 @@
         <field name="priority">99</field>
         <field name="arch" type="xml">
             <kanban class="o_samra_occasion_kanban" create="false" sample="1"
-                    default_order="x_next_occasion_date asc">
+                    default_order="x_next_occasion_date asc"
+                    js_class="samra_occasion_kanban">
                 <field name="x_next_occasion_type"/>
                 <field name="x_days_to_occasion"/>
                 <templates>
