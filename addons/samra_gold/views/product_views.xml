@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- A Gold tab on the product, holding the weights and the working.
+
+         The breakdown is shown read-only beside the inputs on purpose. The
+         commonest question about a jewellery price is "why is it that much",
+         and the answer is metal plus making plus stones; a form that computes
+         a total without showing its parts makes staff reach for a calculator
+         to check it. -->
+
+    <record id="view_product_template_form_samra_gold" model="ir.ui.view">
+        <field name="name">product.template.form.samra.gold</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="samra_gold" string="Gold" invisible="not x_is_gold">
+                    <group>
+                        <group string="Metal">
+                            <field name="x_karat"/>
+                            <field name="x_gross_weight"/>
+                            <field name="x_stone_weight"/>
+                            <field name="x_net_weight" readonly="1"/>
+                            <field name="x_fine_weight" readonly="1"/>
+                            <field name="x_wastage_pct"/>
+                        </group>
+                        <group string="Charges">
+                            <field name="x_making_charge_type"/>
+                            <field name="x_making_charge"/>
+                            <field name="x_stone_value"/>
+                        </group>
+                    </group>
+                    <group string="Today's Working">
+                        <group>
+                            <field name="x_gold_rate_used" readonly="1"/>
+                            <field name="x_metal_value" readonly="1"/>
+                            <field name="x_making_value" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="x_computed_price" readonly="1"/>
+                            <field name="x_price_is_stale" readonly="1"/>
+                            <button name="action_samra_reprice" type="object"
+                                    string="Reprice from Current Rate"
+                                    class="btn-secondary"
+                                    invisible="not x_price_is_stale"/>
+                        </group>
+                    </group>
+                    <p class="text-muted">
+                        Price = net gold x rate x (1 + wastage) + making + stones.
+                        The Sales Price on the General tab is what actually sells;
+                        it is updated when a rate is applied, or by the button above.
+                    </p>
+                </page>
+            </xpath>
+
+            <!-- The flag itself sits with the other product-level switches, so a
+                 piece can be marked gold before the tab exists to fill in. -->
+            <xpath expr="//field[@name='list_price']" position="after">
+                <field name="x_is_gold"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_product_template_list_samra_gold" model="ir.ui.view">
+        <field name="name">product.template.list.samra.gold</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='list_price']" position="after">
+                <field name="x_karat" optional="hide"/>
+                <field name="x_net_weight" optional="hide"/>
+                <field name="x_computed_price" optional="hide"/>
+                <field name="x_price_is_stale" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
