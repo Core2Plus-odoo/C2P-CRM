@@ -1,12 +1,22 @@
+// Customer 360 — the clienteling dossier.
+//
+// Tokens and mixins come from scss/samra_theme.scss, which the manifest lists
+// first. Odoo compiles a bundle's stylesheets as one concatenated string, so
+// there is nothing to import here.
+
 .samra-360 {
     height: 100%;
     overflow: auto;
-    padding: 24px;
     background: var(--samra-ground);
     color: var(--samra-ink);
     font-size: 13px;
 
     * { box-sizing: border-box; }
+
+    .samra-num { font-variant-numeric: tabular-nums; }
+    .samra-ok { color: var(--samra-good); font-weight: 600; }
+    .samra-faint { color: var(--samra-ink-faint); }
+    .is-down { color: var(--samra-danger); font-weight: 600; }
 
     // ---------- placeholders ----------
     .samra-placeholder {
@@ -15,7 +25,7 @@
         align-items: center;
         justify-content: center;
         gap: 12px;
-        min-height: 320px;
+        min-height: 340px;
         color: var(--samra-ink-soft);
 
         &--error { color: var(--samra-danger); }
@@ -31,56 +41,76 @@
     }
 
     @keyframes samra-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .samra-spinner { animation: none; } }
 
-    // ---------- header ----------
-    .samra-header {
+    // ---------- hero ----------
+    .samra-hero {
+        padding: 34px 32px 26px;
+        // One warm bloom behind the name, so the page opens on the person
+        // rather than on a toolbar.
+        background:
+            radial-gradient(900px 300px at 12% -10%, var(--samra-hero-wash), transparent 60%),
+            linear-gradient(180deg, var(--samra-hero-top) 0%, var(--samra-ground) 100%);
+        border-bottom: 1px solid var(--samra-line);
+    }
+
+    .samra-hero__top {
         display: flex;
+        gap: 24px;
         align-items: flex-start;
-        gap: 20px;
-        padding: 20px 24px;
-        margin-bottom: 12px;
-        @include samra-card-surface;
-        // A single hairline of gold, as the only branded flourish on the page.
-        border-top: 2px solid var(--samra-gold);
+        flex-wrap: wrap;
     }
 
     .samra-avatar {
-        width: 76px;
-        height: 76px;
+        width: 92px;
+        height: 92px;
         flex: 0 0 auto;
         object-fit: cover;
         border-radius: 50%;
         border: 1px solid var(--samra-line-firm);
-        background: var(--samra-gold-wash);
+        @include samra-well;
+        box-shadow: 0 0 0 1px var(--samra-gold-wash), 0 14px 32px rgba(0, 0, 0, 0.14);
     }
 
-    .samra-header__identity { flex: 1 1 auto; min-width: 0; }
+    .samra-who { flex: 1 1 320px; min-width: 0; }
 
-    .samra-header__nameline {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 12px;
+    .samra-eyebrow {
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--samra-ink-faint);
     }
 
     .samra-name {
-        margin: 0;
+        margin: 6px 0 0;
         font-family: var(--samra-display);
-        font-size: 26px;
         font-weight: 400;
-        letter-spacing: 0.01em;
+        font-size: #{"clamp(30px, 3.6vw, 44px)"};
+        line-height: 1.04;
+        text-wrap: balance;
+    }
+
+    .samra-chips {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 13px;
     }
 
     .samra-tier {
-        @include samra-label;
-        padding: 4px 10px;
+        padding: 5px 13px;
         border-radius: 2px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
         color: var(--samra-ink);
-        background: rgba(26, 22, 20, 0.06);
+        background: var(--samra-track);
         border: 1px solid var(--samra-line-firm);
 
         // Tier must be legible at a glance from across a counter, so the three
-        // levels differ in weight and fill, not only in hue.
+        // levels differ in fill and weight, not only in hue.
         &--vip {
             color: var(--samra-gold);
             background: var(--samra-gold-wash);
@@ -88,164 +118,144 @@
         }
 
         &--vvip {
-            color: #fff;
+            color: var(--samra-on-gold);
             border-color: transparent;
             background: linear-gradient(100deg, var(--samra-gold) 0%, var(--samra-gold-lift) 100%);
-            box-shadow: 0 1px 6px rgba(168, 132, 44, 0.35);
+            box-shadow: 0 2px 12px var(--samra-gold-wash);
         }
     }
 
-    .samra-header__meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px 22px;
-        margin-top: 10px;
-        color: var(--samra-ink);
-
-        > span { display: flex; gap: 6px; align-items: baseline; }
-    }
-
-    .samra-muted { @include samra-label; }
-
-    .samra-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 10px;
-    }
-
-    .samra-tag {
-        padding: 2px 9px;
+    .samra-chip {
+        padding: 4px 11px;
         font-size: 11px;
         border-radius: 999px;
-        background: var(--samra-gold-wash);
-        color: var(--samra-gold);
-        border: 1px solid rgba(168, 132, 44, 0.3);
+        color: var(--samra-ink-soft);
+        background: var(--samra-surface);
+        border: 1px solid var(--samra-line-firm);
+
+        &--gold {
+            color: var(--samra-gold);
+            background: var(--samra-gold-wash);
+            border-color: var(--samra-gold-wash);
+        }
     }
 
-    .samra-header__actions {
+    .samra-facts {
         display: flex;
         flex-wrap: wrap;
+        gap: 4px 24px;
+        margin-top: 15px;
+    }
+
+    .samra-fact {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        font-size: 12.5px;
+
+        > span { @include samra-label; }
+        b { font-weight: 500; }
+    }
+
+    .samra-acts {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
         gap: 8px;
         flex: 0 0 auto;
     }
 
-    .samra-action {
+    .samra-act {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        padding: 8px 14px;
+        gap: 8px;
+        padding: 9px 15px;
         font-size: 12px;
         font-weight: 600;
+        font-family: inherit;
         text-decoration: none;
         cursor: pointer;
         border-radius: var(--samra-radius);
         color: var(--samra-ink);
         background: var(--samra-surface);
         border: 1px solid var(--samra-line-firm);
-        transition: background 0.12s ease, border-color 0.12s ease;
+        transition: border-color 0.12s ease, background 0.12s ease;
 
         &:hover {
-            background: var(--samra-gold-wash);
             border-color: var(--samra-gold);
             color: var(--samra-ink);
             text-decoration: none;
         }
 
-        &--wa:hover { background: #e8f6ee; border-color: #2f6b4f; }
+        &:focus-visible { outline: 2px solid var(--samra-gold); outline-offset: 2px; }
+        &:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        &--pri {
+            color: var(--samra-on-gold);
+            border-color: transparent;
+            background: linear-gradient(100deg, var(--samra-gold), var(--samra-gold-lift));
+
+            &:hover { color: var(--samra-on-gold); }
+        }
+
         &--ghost { background: transparent; }
     }
 
-    // ---------- consent ----------
-    .samra-consent {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-
-    .samra-consent__pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 5px 12px;
-        font-size: 11.5px;
-        font-weight: 600;
-        border-radius: 999px;
-
-        &.is-on  { color: var(--samra-good);   background: var(--samra-good-wash); }
-        &.is-off { color: var(--samra-ink-faint); background: rgba(26, 22, 20, 0.05); }
-    }
-
-    // ---------- stats ----------
-    .samra-stats {
+    // ---------- KPI rail ----------
+    // Hairline gaps rather than gutters: the six figures read as one
+    // instrument panel instead of six unrelated cards.
+    .samra-rail {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: var(--samra-gap);
-        margin-bottom: var(--samra-gap);
+        grid-template-columns: repeat(6, 1fr);
+        gap: 1px;
+        margin-top: 26px;
+        background: var(--samra-line);
+        border: 1px solid var(--samra-line);
+        border-radius: var(--samra-radius);
+        overflow: hidden;
     }
 
-    .samra-stat {
+    .samra-kpi {
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        padding: 16px 18px;
+        gap: 4px;
+        padding: 14px 16px;
         text-align: left;
         cursor: pointer;
-        @include samra-card-surface;
-        transition: border-color 0.12s ease, transform 0.12s ease;
+        background: var(--samra-surface);
+        border: 0;
+        transition: background 0.12s ease;
 
-        &:hover {
-            border-color: var(--samra-gold);
-            transform: translateY(-1px);
-        }
-
-        // Static tiles carry both classes, so this later rule of equal
-        // specificity takes the hover treatment back off.
-        &--static {
-            cursor: default;
-
-            &:hover {
-                border-color: var(--samra-line);
-                transform: none;
-            }
-        }
-
-        &.is-at-risk {
-            border-left: 3px solid var(--samra-danger);
-            background: var(--samra-danger-wash);
-        }
+        &:hover:not(.samra-kpi--static) { background: var(--samra-gold-wash); }
+        &--static { cursor: default; }
+        &.is-risk { box-shadow: inset 3px 0 0 var(--samra-danger); }
     }
 
-    .samra-stat__label { @include samra-label; }
+    .samra-kpi__k { @include samra-label; }
 
-    .samra-stat__value {
+    .samra-kpi__v {
         font-family: var(--samra-display);
-        font-size: 23px;
-        line-height: 1.15;
+        font-size: 26px;
+        line-height: 1.1;
 
         small {
             font-family: inherit;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--samra-ink-soft);
             margin-left: 4px;
         }
     }
 
-    .samra-stat__hint {
-        font-size: 11.5px;
-        color: var(--samra-ink-faint);
-
-        .fa { margin-right: 4px; }
-    }
-
-    .is-at-risk .samra-stat__hint { color: var(--samra-danger); font-weight: 600; }
+    .samra-kpi__s { font-size: 10.5px; color: var(--samra-ink-faint); }
+    .is-risk .samra-kpi__s { color: var(--samra-danger); font-weight: 600; }
 
     // ---------- layout ----------
     .samra-grid {
         display: grid;
-        grid-template-columns: 1.55fr 1fr;
+        grid-template-columns: 1.62fr 1fr;
         gap: var(--samra-gap);
         align-items: start;
+        padding: var(--samra-gap) 32px 40px;
     }
 
     .samra-col {
@@ -260,26 +270,33 @@
         padding: 18px 20px;
     }
 
-    .samra-card__head {
+    .samra-card__h {
         display: flex;
         align-items: baseline;
         justify-content: space-between;
         gap: 12px;
-        padding-bottom: 10px;
-        margin-bottom: 14px;
+        padding-bottom: 11px;
+        margin-bottom: 15px;
         border-bottom: 1px solid var(--samra-line);
 
         h2 {
             margin: 0;
             font-family: var(--samra-display);
-            font-size: 16px;
+            font-size: 19px;
             font-weight: 400;
         }
     }
 
+    .samra-note {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--samra-ink-faint);
+    }
+
     .samra-link {
         padding: 0;
-        font-size: 11.5px;
+        font-size: 11px;
         font-weight: 600;
         color: var(--samra-gold);
         background: none;
@@ -296,42 +313,183 @@
         color: var(--samra-ink-faint);
     }
 
-    // ---------- purchase timeline ----------
-    .samra-timeline {
-        list-style: none;
-        margin: 0;
-        padding: 0 0 0 18px;
-        border-left: 1px solid var(--samra-line-firm);
+    // ---------- trend chart ----------
+    // Narrow viewports scroll the chart rather than crushing six months of
+    // labels into illegibility.
+    .samra-chartbox { overflow-x: auto; }
+
+    .samra-trend {
+        display: block;
+        width: 100%;
+        min-width: 560px;
+        height: 190px;
+
+        text {
+            font-family: inherit;
+            font-size: 10px;
+            fill: var(--samra-ink-faint);
+        }
     }
 
-    .samra-timeline__item {
-        position: relative;
-        padding-bottom: 18px;
+    .samra-trend__val { fill: var(--samra-ink-soft); font-size: 9.5px; }
 
-        &:last-child { padding-bottom: 0; }
+    // ---------- donut ----------
+    .samra-donutwrap {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex-wrap: wrap;
     }
 
-    .samra-timeline__marker {
-        position: absolute;
-        left: -23px;
-        top: 5px;
+    .samra-donut__big {
+        fill: var(--samra-ink);
+        font-family: var(--samra-display);
+        font-size: 5.4px;
+    }
+
+    .samra-donut__sub {
+        fill: var(--samra-ink-faint);
+        font-size: 2.1px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+    }
+
+    .samra-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        flex: 1 1 160px;
+        min-width: 0;
+
+        > div { display: flex; align-items: center; gap: 9px; font-size: 12px; }
+        b { margin-left: auto; font-weight: 500; color: var(--samra-ink-soft); }
+    }
+
+    .samra-dot {
         width: 9px;
         height: 9px;
+        border-radius: 2px;
+        flex: 0 0 auto;
+    }
+
+    // ---------- breakdown bars ----------
+    .samra-bd { display: flex; flex-direction: column; gap: 11px; }
+
+    .samra-bd__row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 3px 12px;
+    }
+
+    .samra-bd__lab {
+        font-size: 12px;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .samra-bd__val { font-size: 12px; color: var(--samra-ink-soft); }
+
+    .samra-bd__track {
+        grid-column: 1 / -1;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--samra-track);
+        overflow: hidden;
+    }
+
+    .samra-bd__fill {
+        display: block;
+        height: 100%;
+        min-width: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--samra-gold) 0%, var(--samra-gold-lift) 100%);
+
+        // Branch is a different question from collection, so it gets a
+        // different hue rather than a second gold bar.
+        &--q { background: var(--samra-chart-line); }
+    }
+
+    // ---------- tier ----------
+    .samra-tierhead {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12.5px;
+    }
+
+    .samra-tierhead__v {
+        font-family: var(--samra-display);
+        font-size: 18px;
+        color: var(--samra-gold);
+    }
+
+    .samra-tiertrack {
+        display: block;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--samra-track);
+        overflow: hidden;
+        margin: 9px 0 7px;
+    }
+
+    .samra-tierfill {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--samra-gold), var(--samra-gold-lift));
+    }
+
+    .samra-tierends {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: var(--samra-ink-faint);
+    }
+
+    .samra-alert {
+        margin-top: 14px;
+        padding: 11px 13px;
+        border-radius: 3px;
+        font-size: 12px;
+        background: var(--samra-danger-wash);
+        border-left: 2px solid var(--samra-danger);
+    }
+
+    // ---------- purchase timeline ----------
+    .samra-tl {
+        list-style: none;
+        margin: 0;
+        padding: 0 0 0 20px;
+        border-left: 1px solid var(--samra-line-firm);
+
+        > li { position: relative; padding-bottom: 20px; }
+        > li:last-child { padding-bottom: 0; }
+    }
+
+    .samra-tl__dot {
+        position: absolute;
+        left: -24.5px;
+        top: 5px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
         background: var(--samra-gold);
         box-shadow: 0 0 0 3px var(--samra-surface);
     }
 
-    .samra-timeline__top {
+    .samra-tl__top {
         display: flex;
         align-items: baseline;
         justify-content: space-between;
         gap: 12px;
     }
 
-    .samra-order-ref {
+    .samra-tl__ref {
         padding: 0;
-        font-size: 13.5px;
+        font-size: 13px;
         font-weight: 700;
         color: var(--samra-ink);
         background: none;
@@ -341,17 +499,14 @@
         &:hover { color: var(--samra-gold); text-decoration: underline; }
     }
 
-    .samra-order-total {
-        font-family: var(--samra-display);
-        font-size: 15px;
-    }
+    .samra-tl__amt { font-family: var(--samra-display); font-size: 17px; }
 
-    .samra-timeline__meta {
+    .samra-tl__meta {
         display: flex;
         flex-wrap: wrap;
-        gap: 4px 14px;
-        margin: 3px 0 8px;
-        font-size: 11.5px;
+        gap: 3px 14px;
+        margin: 3px 0 9px;
+        font-size: 10.5px;
         color: var(--samra-ink-faint);
     }
 
@@ -361,44 +516,49 @@
         padding: 0;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 9px;
 
-        li { display: flex; gap: 10px; align-items: center; }
+        li { display: flex; gap: 11px; align-items: center; }
     }
 
-    .samra-lines__img {
-        width: 38px;
-        height: 38px;
+    .samra-thumb {
+        width: 42px;
+        height: 42px;
         flex: 0 0 auto;
         object-fit: cover;
         border-radius: 3px;
         border: 1px solid var(--samra-line);
-        background: var(--samra-gold-wash);
+        @include samra-well;
     }
 
-    .samra-lines__text { display: flex; flex-direction: column; min-width: 0; }
-
-    .samra-lines__desc {
+    .samra-lines__d {
+        display: block;
         font-size: 12.5px;
-        font-weight: 600;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        font-weight: 500;
     }
 
-    .samra-lines__spec { font-size: 11px; color: var(--samra-ink-faint); }
+    .samra-lines__s {
+        display: block;
+        font-size: 10.5px;
+        color: var(--samra-ink-faint);
+    }
 
     // ---------- product grids ----------
-    .samra-products {
+    .samra-pg {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
         gap: 12px;
     }
 
-    .samra-product {
+    .samra-pgi {
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 2px;
+        padding: 0;
+        text-align: left;
+        background: none;
+        border: 0;
+        cursor: pointer;
 
         img {
             width: 100%;
@@ -406,70 +566,60 @@
             object-fit: cover;
             border-radius: 3px;
             border: 1px solid var(--samra-line);
-            background: var(--samra-gold-wash);
+            @include samra-well;
         }
+
+        &:hover img { border-color: var(--samra-gold); }
     }
 
-    .samra-product__name {
-        margin-top: 4px;
-        font-size: 11.5px;
-        font-weight: 600;
+    .samra-pgi__n {
+        margin-top: 6px;
+        font-size: 11px;
+        font-weight: 500;
         line-height: 1.3;
     }
 
-    .samra-product__price { font-size: 11.5px; color: var(--samra-gold); font-weight: 600; }
-    .samra-product__note  { font-size: 10.5px; color: var(--samra-ink-faint); }
+    .samra-pgi__p { font-size: 11px; color: var(--samra-gold); font-weight: 600; }
+    .samra-pgi__x { font-size: 10px; color: var(--samra-ink-faint); }
 
     // ---------- preferences ----------
     .samra-prefs {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px 16px;
+        gap: 13px 16px;
         margin: 0;
 
         > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-
         dt { @include samra-label; }
-
-        dd {
-            margin: 0;
-            font-size: 12.5px;
-            font-weight: 600;
-        }
+        dd { margin: 0; font-size: 12.5px; font-weight: 500; }
     }
 
-    // ---------- simple lists ----------
-    .samra-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .samra-list__main {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        width: 100%;
-        padding: 8px 10px;
-        text-align: left;
-        background: none;
-        border: 0;
+    // ---------- engagement ----------
+    .samra-eng {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--samra-line);
+        border: 1px solid var(--samra-line);
         border-radius: 3px;
-        cursor: pointer;
+        overflow: hidden;
 
-        &:hover { background: var(--samra-gold-wash); }
+        > div { background: var(--samra-surface-2); padding: 12px; }
 
-        span  { font-size: 12.5px; font-weight: 600; }
-        small { font-size: 11px; color: var(--samra-ink-faint); }
+        b {
+            display: block;
+            font-family: var(--samra-display);
+            font-size: 22px;
+            font-weight: 400;
+        }
+
+        span { @include samra-label; font-size: 9.5px; }
     }
 
     // ---------- whatsapp ----------
     .samra-chat {
         list-style: none;
-        margin: 0;
+        margin: 14px 0 0;
         padding: 0;
         display: flex;
         flex-direction: column;
@@ -477,56 +627,51 @@
     }
 
     .samra-chat__msg {
-        max-width: 86%;
-        padding: 8px 11px;
-        border-radius: 10px;
+        max-width: 88%;
+        padding: 9px 12px;
+        border-radius: 11px;
 
-        p     { margin: 0 0 3px; font-size: 12.5px; line-height: 1.45; }
-        small { font-size: 10.5px; color: var(--samra-ink-faint); }
+        p { margin: 0 0 3px; font-size: 12.5px; line-height: 1.45; }
+        small { font-size: 10px; color: var(--samra-ink-faint); }
 
-        // Direction is carried by side and fill together, so the thread is
-        // readable without stopping to parse a label.
+        // Direction is carried by side and fill together, so the thread reads
+        // without stopping to parse a label.
         &--inbound {
             align-self: flex-start;
-            background: rgba(26, 22, 20, 0.05);
+            background: var(--samra-track);
             border-bottom-left-radius: 2px;
         }
 
         &--outbound {
             align-self: flex-end;
             background: var(--samra-good-wash);
+            border: 1px solid var(--samra-good);
             border-bottom-right-radius: 2px;
         }
     }
 
-    // ---------- rewards ----------
-    .samra-rewards {
+    // ---------- simple rows ----------
+    .samra-rows {
         list-style: none;
         margin: 0;
         padding: 0;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 9px;
 
         li {
             display: flex;
+            gap: 11px;
             align-items: baseline;
             justify-content: space-between;
-            gap: 10px;
-            padding: 7px 10px;
-            border-radius: 3px;
             font-size: 12.5px;
-            background: rgba(26, 22, 20, 0.04);
-            color: var(--samra-ink-faint);
-
-            small { font-weight: 700; }
-
-            &.is-affordable {
-                color: var(--samra-ink);
-                background: var(--samra-gold-wash);
-                border-left: 2px solid var(--samra-gold);
-            }
+            padding-bottom: 9px;
+            border-bottom: 1px solid var(--samra-line);
+            cursor: pointer;
         }
+
+        li:last-child { border-bottom: 0; padding-bottom: 0; }
+        small { display: block; font-size: 10.5px; color: var(--samra-ink-faint); }
     }
 
     .samra-notes {
@@ -535,20 +680,18 @@
         color: var(--samra-ink-soft);
     }
 
-    // ---------- responsive (requirement 38: iPad and mobile) ----------
-    @media (max-width: 1200px) {
-        .samra-stats { grid-template-columns: repeat(2, 1fr); }
-        .samra-grid  { grid-template-columns: 1fr; }
+    // ---------- responsive ----------
+    @media (max-width: 1280px) {
+        .samra-rail { grid-template-columns: repeat(3, 1fr); }
+        .samra-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 767px) {
-        padding: 14px;
-
-        .samra-header { flex-direction: column; align-items: stretch; gap: 14px; }
-        .samra-header__actions { justify-content: flex-start; }
-        .samra-stats  { grid-template-columns: 1fr; }
-        .samra-prefs  { grid-template-columns: 1fr; }
-        .samra-name   { font-size: 22px; }
+        .samra-hero { padding: 24px 16px 20px; }
+        .samra-grid { padding: 16px 16px 32px; }
+        .samra-rail { grid-template-columns: repeat(2, 1fr); }
+        .samra-prefs { grid-template-columns: 1fr; }
+        .samra-eng { grid-template-columns: 1fr; }
     }
 }
 
@@ -556,26 +699,10 @@
 // Showing-room capture
 //
 // Sized for a thumb on an iPad held in one hand while the other holds a
-// tray: targets are large, the tray is always visible, and saving is a
-// single action at the end rather than a form per item.
+// tray: targets are large, the tray stays visible, and saving is a single
+// action at the end rather than a form per item.
 // ====================================================================
 .samra-360 {
-
-    .samra-action--primary {
-        color: #fff;
-        background: var(--samra-gold);
-        border-color: var(--samra-gold);
-
-        &:hover {
-            color: #fff;
-            background: var(--samra-gold-lift);
-            border-color: var(--samra-gold-lift);
-        }
-
-        &:disabled { opacity: 0.45; cursor: not-allowed; }
-    }
-
-    .samra-action:disabled { opacity: 0.45; cursor: not-allowed; }
 
     .samra-capture {
         position: fixed;
@@ -585,7 +712,7 @@
         align-items: center;
         justify-content: center;
         padding: 20px;
-        background: rgba(26, 22, 20, 0.45);
+        background: rgba(13, 11, 10, 0.55);
     }
 
     .samra-capture__sheet {
@@ -593,14 +720,14 @@
         flex-direction: column;
         width: 760px;
         max-width: 100%;
-        // Interpolated so Sass emits this verbatim. libsass reads a bare
-        // min() as its own function and fails on mixed units.
+        // Interpolated so Sass emits it verbatim -- libsass reads a bare min()
+        // as its own function and fails on mixed units.
         max-height: #{"min(88vh, 760px)"};
         padding: 20px 22px;
         background: var(--samra-surface);
         border-radius: 6px;
         border-top: 2px solid var(--samra-gold);
-        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
     }
 
     .samra-capture__head {
@@ -612,15 +739,11 @@
         h2 {
             margin: 0;
             font-family: var(--samra-display);
-            font-size: 18px;
+            font-size: 19px;
             font-weight: 400;
         }
 
-        p {
-            margin: 4px 0 0;
-            font-size: 12px;
-            color: var(--samra-ink-faint);
-        }
+        p { margin: 4px 0 0; font-size: 12px; color: var(--samra-ink-faint); }
     }
 
     .samra-capture__close {
@@ -635,7 +758,7 @@
         border: 0;
         border-radius: 3px;
 
-        &:hover { background: rgba(26, 22, 20, 0.06); }
+        &:hover { background: var(--samra-track); }
     }
 
     .samra-capture__input {
@@ -644,6 +767,7 @@
         margin-top: 14px;
         padding: 0 14px;
         font-size: 15px;
+        font-family: inherit;
         color: var(--samra-ink);
         background: var(--samra-surface);
         border: 1px solid var(--samra-line-firm);
@@ -652,12 +776,12 @@
         &:focus {
             outline: none;
             border-color: var(--samra-gold);
-            box-shadow: 0 0 0 3px rgba(168, 132, 44, 0.18);
+            box-shadow: 0 0 0 3px var(--samra-gold-wash);
         }
     }
 
     // The tray is the running record of what has been shown, so it stays on
-    // screen — an associate should never wonder whether a scan registered.
+    // screen -- an associate should never wonder whether a scan registered.
     .samra-tray {
         display: flex;
         flex-wrap: wrap;
@@ -669,10 +793,7 @@
         border-radius: var(--samra-radius);
     }
 
-    .samra-tray__label {
-        @include samra-label;
-        color: var(--samra-gold);
-    }
+    .samra-tray__label { @include samra-label; color: var(--samra-gold); }
 
     .samra-tray__item {
         display: inline-flex;
@@ -681,7 +802,7 @@
         padding: 4px 4px 4px 10px;
         font-size: 12px;
         background: var(--samra-surface);
-        border: 1px solid rgba(168, 132, 44, 0.35);
+        border: 1px solid var(--samra-gold);
         border-radius: 999px;
 
         button {
@@ -695,7 +816,7 @@
             border: 0;
             border-radius: 50%;
 
-            &:hover { background: rgba(26, 22, 20, 0.08); color: var(--samra-danger); }
+            &:hover { background: var(--samra-track); color: var(--samra-danger); }
         }
     }
 
@@ -726,7 +847,7 @@
             aspect-ratio: 1;
             object-fit: cover;
             border-radius: 3px;
-            background: var(--samra-gold-wash);
+            @include samra-well;
         }
 
         &:hover { border-color: var(--samra-gold); }
@@ -740,16 +861,8 @@
         }
     }
 
-    .samra-pick__name {
-        font-size: 12px;
-        font-weight: 600;
-        line-height: 1.3;
-    }
-
-    .samra-pick__meta {
-        font-size: 11px;
-        color: var(--samra-ink-faint);
-    }
+    .samra-pick__name { font-size: 12px; font-weight: 600; line-height: 1.3; }
+    .samra-pick__meta { font-size: 11px; color: var(--samra-ink-faint); }
 
     .samra-capture__msg {
         margin-top: 12px;
@@ -781,6 +894,6 @@
         }
 
         .samra-capture__results { grid-template-columns: repeat(2, 1fr); }
-        .samra-capture__foot .samra-action { flex: 1 1 auto; justify-content: center; }
+        .samra-capture__foot .samra-act { flex: 1 1 auto; justify-content: center; }
     }
 }
