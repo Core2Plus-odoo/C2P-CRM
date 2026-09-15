@@ -6,15 +6,18 @@ customers, but its only condition was an order minimum of AED 20,000 -- so any
 walk-in hitting that figure received 7% off. Core loyalty has no
 partner-attribute condition, so the gate has to live in code.
 
-The override is deliberately narrow: it filters one named program and leaves
-every other program's applicability untouched.
+It hooks `_get_program_domain`, which sale_loyalty documents as "the base
+domain that all programs have to comply to". Every path that considers a
+program runs through it -- automatic point computation, reward listing, and
+`_try_apply_program` when someone applies one by hand -- so one narrow
+condition covers them all. `_get_trigger_domain` gets the same treatment, so
+the program stays gated if it is ever switched from automatic to a code.
+
+The condition only ever subtracts one named program; no other program's
+applicability changes.
 """
 
-import logging
-
 from odoo import models
-
-_logger = logging.getLogger(__name__)
 
 VIP_PROGRAM_NAME = 'VIP Instant Discount'
 ELIGIBLE_TIERS = ('vip', 'vvip')
@@ -23,25 +26,19 @@ ELIGIBLE_TIERS = ('vip', 'vvip')
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    def _get_applicable_programs(self):
-        programs = super()._get_applicable_programs()
+    def _samra_customer_is_vip(self):
+        """True when this order's customer holds a tier the discount is for."""
+        return self.partner_id.x_vip_tier in ELIGIBLE_TIERS
 
-        gated = programs.filtered(lambda p: p.name == VIP_PROGRAM_NAME)
-        if not gated:
-            return programs
+    def _get_program_domain(self):
+        # super() calls ensure_one(), so self is a single order here.
+        domain = super()._get_program_domain()
+        if self._samra_customer_is_vip():
+            return domain
+        return domain + [('name', '!=', VIP_PROGRAM_NAME)]
 
-        # Odoo calls this per order, but nothing guarantees it. On a multi-record
-        # set "the customer's tier" has no single answer, so withhold rather
-        # than guess: a discount wrongly granted is harder to undo than one a
-        # manager applies by hand.
-        if len(self) != 1:
-            return programs - gated
-
-        tier = self.partner_id.x_vip_tier if self.partner_id else False
-        if tier in ELIGIBLE_TIERS:
-            return programs
-
-        _logger.debug(
-            "Samra CRM: withholding %s from %s (tier %s)",
-            VIP_PROGRAM_NAME, self.partner_id.display_name, tier or 'regular')
-        return programs - gated
+    def _get_trigger_domain(self):
+        domain = super()._get_trigger_domain()
+        if self._samra_customer_is_vip():
+            return domain
+        return domain + [('program_id.name', '!=', VIP_PROGRAM_NAME)]

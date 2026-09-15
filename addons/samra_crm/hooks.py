@@ -63,7 +63,9 @@ def _find_stage(env, name):
     name. Shared stages (team_id unset) are the ones this pipeline owns.
     """
     Stage = env['crm.stage']
-    shared = Stage.search([('name', '=', name), ('team_id', '=', False)], limit=1)
+    # crm.stage links teams through team_ids (Many2many); an empty set means the
+    # stage is shared across every team, which is the one this pipeline owns.
+    shared = Stage.search([('name', '=', name), ('team_ids', '=', False)], limit=1)
     return shared or Stage.search([('name', '=', name)], limit=1)
 
 
@@ -117,7 +119,6 @@ def _setup_loyalty_programs(env):
             'rule_ids': [(0, 0, {
                 'reward_point_amount': POINTS_PER_AED,
                 'reward_point_mode': 'money',
-                'reward_point_name': 'Points',
             })],
             'reward_ids': [
                 (0, 0, {'reward_type': 'discount', 'discount': 5, 'discount_mode': 'percent',
