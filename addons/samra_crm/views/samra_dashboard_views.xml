@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_samra_dashboard" model="ir.actions.client">
+        <field name="name">Management Dashboard</field>
+        <field name="tag">samra_management_dashboard</field>
+    </record>
+
+    <menuitem id="menu_samra_dashboard"
+              name="Dashboard"
+              parent="menu_samra_crm_root"
+              action="action_samra_dashboard"
+              sequence="1"/>
+
+</odoo>

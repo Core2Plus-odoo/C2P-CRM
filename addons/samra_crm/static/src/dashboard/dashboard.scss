@@ -1,0 +1,452 @@
+@import "../scss/samra_theme";
+
+.samra-dash {
+    height: 100%;
+    overflow: auto;
+    padding: 24px;
+    background: var(--samra-ground);
+    color: var(--samra-ink);
+    font-size: 13px;
+
+    * { box-sizing: border-box; }
+
+    .samra-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        min-height: 300px;
+        color: var(--samra-ink-soft);
+
+        &--error { color: var(--samra-danger); }
+    }
+
+    .samra-spinner {
+        width: 22px;
+        height: 22px;
+        border: 2px solid var(--samra-line-firm);
+        border-top-color: var(--samra-gold);
+        border-radius: 50%;
+        animation: samra-spin 0.7s linear infinite;
+    }
+
+    @keyframes samra-spin { to { transform: rotate(360deg); } }
+
+    // ---------- filter bar ----------
+    .samra-dash__bar {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 18px 22px;
+        margin-bottom: var(--samra-gap);
+        @include samra-card-surface;
+        border-top: 2px solid var(--samra-gold);
+
+        h1 {
+            margin: 0;
+            font-family: var(--samra-display);
+            font-size: 22px;
+            font-weight: 400;
+        }
+    }
+
+    .samra-dash__filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 12px;
+
+        label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin: 0;
+
+            > span { @include samra-label; }
+        }
+
+        input,
+        select {
+            height: 32px;
+            padding: 0 9px;
+            font-size: 12.5px;
+            color: var(--samra-ink);
+            background: var(--samra-surface);
+            border: 1px solid var(--samra-line-firm);
+            border-radius: var(--samra-radius);
+
+            &:focus {
+                outline: none;
+                border-color: var(--samra-gold);
+                box-shadow: 0 0 0 2px rgba(168, 132, 44, 0.16);
+            }
+        }
+    }
+
+    .samra-dash__reset {
+        height: 32px;
+        padding: 0 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        color: var(--samra-ink-soft);
+        background: transparent;
+        border: 1px solid var(--samra-line-firm);
+        border-radius: var(--samra-radius);
+
+        &:hover { border-color: var(--samra-gold); color: var(--samra-gold); }
+    }
+
+    // ---------- KPI row ----------
+    .samra-kpis {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--samra-gap);
+        margin-bottom: var(--samra-gap);
+    }
+
+    .samra-kpi {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 18px 20px;
+        text-align: left;
+        cursor: pointer;
+        @include samra-card-surface;
+        transition: border-color 0.12s ease, transform 0.12s ease;
+
+        &:hover {
+            border-color: var(--samra-gold);
+            transform: translateY(-1px);
+        }
+
+        &--alert {
+            border-left: 3px solid var(--samra-danger);
+
+            .samra-kpi__value { color: var(--samra-danger); }
+        }
+    }
+
+    .samra-kpi__label { @include samra-label; }
+
+    .samra-kpi__value {
+        font-family: var(--samra-display);
+        font-size: 26px;
+        line-height: 1.1;
+    }
+
+    .samra-kpi__hint {
+        font-size: 11px;
+        color: var(--samra-ink-faint);
+    }
+
+    .samra-kpi:hover .samra-kpi__hint { color: var(--samra-gold); }
+
+    // ---------- panels ----------
+    .samra-dash__grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--samra-gap);
+        align-items: start;
+    }
+
+    .samra-panel {
+        @include samra-card-surface;
+        padding: 18px 20px;
+        min-width: 0;
+
+        &--wide { grid-column: 1 / -1; }
+    }
+
+    .samra-panel__head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+        border-bottom: 1px solid var(--samra-line);
+
+        h2 {
+            margin: 0;
+            font-family: var(--samra-display);
+            font-size: 16px;
+            font-weight: 400;
+        }
+    }
+
+    .samra-panel__note {
+        font-size: 11px;
+        color: var(--samra-ink-faint);
+    }
+
+    .samra-empty {
+        padding: 14px 0;
+        font-size: 12.5px;
+        font-style: italic;
+        color: var(--samra-ink-faint);
+    }
+
+    // ---------- funnel ----------
+    .samra-funnel {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        > li + li { margin-top: 4px; }
+
+        button {
+            display: grid;
+            grid-template-columns: 140px 1fr 48px 78px;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 7px 8px;
+            text-align: left;
+            background: none;
+            border: 0;
+            border-radius: 3px;
+            cursor: pointer;
+
+            &:hover { background: var(--samra-gold-wash); }
+        }
+    }
+
+    .samra-funnel__name { font-size: 12.5px; font-weight: 600; }
+
+    .samra-funnel__track {
+        height: 22px;
+        border-radius: 2px;
+        background: rgba(26, 22, 20, 0.05);
+        overflow: hidden;
+    }
+
+    .samra-funnel__fill {
+        display: block;
+        height: 100%;
+        min-width: 2px;
+        background: linear-gradient(90deg, var(--samra-gold) 0%, var(--samra-gold-lift) 100%);
+    }
+
+    .samra-funnel__count {
+        font-family: var(--samra-display);
+        font-size: 15px;
+        text-align: right;
+    }
+
+    .samra-funnel__value {
+        font-size: 11.5px;
+        color: var(--samra-ink-faint);
+        text-align: right;
+    }
+
+    // ---------- tiers ----------
+    .samra-tiers {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        > li + li { margin-top: 10px; }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            text-align: left;
+            background: none;
+            border: 0;
+            border-radius: 3px;
+            cursor: pointer;
+
+            &:hover { background: var(--samra-gold-wash); }
+        }
+    }
+
+    .samra-tiers__top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 5px;
+    }
+
+    .samra-tiers__name { font-size: 12.5px; font-weight: 700; }
+
+    .samra-tiers__share {
+        font-family: var(--samra-display);
+        font-size: 15px;
+    }
+
+    .samra-tiers__track {
+        display: block;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(26, 22, 20, 0.06);
+        overflow: hidden;
+    }
+
+    .samra-tiers__fill {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background: var(--samra-ink-faint);
+    }
+
+    .samra-tiers__row--vip  .samra-tiers__fill { background: var(--samra-gold); }
+    .samra-tiers__row--vvip .samra-tiers__fill {
+        background: linear-gradient(90deg, var(--samra-gold) 0%, var(--samra-gold-lift) 100%);
+    }
+
+    .samra-tiers__meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 4px;
+        font-size: 11px;
+        color: var(--samra-ink-faint);
+    }
+
+    // ---------- horizontal bars ----------
+    .samra-bars {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        > li + li { margin-top: 4px; }
+
+        button {
+            display: grid;
+            grid-template-columns: 1fr 78px 52px;
+            grid-template-areas:
+                "name  value sub"
+                "track track track";
+            align-items: center;
+            gap: 4px 10px;
+            width: 100%;
+            padding: 7px 8px;
+            text-align: left;
+            background: none;
+            border: 0;
+            border-radius: 3px;
+            cursor: pointer;
+
+            &:hover { background: var(--samra-gold-wash); }
+        }
+    }
+
+    .samra-bars__name  { grid-area: name;  font-size: 12.5px; font-weight: 600; }
+    .samra-bars__value { grid-area: value; font-size: 12.5px; text-align: right; }
+    .samra-bars__sub   { grid-area: sub;   font-size: 11px; color: var(--samra-ink-faint); text-align: right; }
+
+    .samra-bars__track {
+        grid-area: track;
+        height: 7px;
+        border-radius: 999px;
+        background: rgba(26, 22, 20, 0.06);
+        overflow: hidden;
+    }
+
+    .samra-bars__fill {
+        display: block;
+        height: 100%;
+        min-width: 2px;
+        border-radius: 999px;
+        background: var(--samra-gold);
+    }
+
+    // ---------- tables ----------
+    .samra-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+
+        th {
+            @include samra-label;
+            padding: 0 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--samra-line);
+        }
+
+        td {
+            padding: 9px 10px;
+            border-bottom: 1px solid var(--samra-line);
+        }
+
+        tbody tr {
+            cursor: pointer;
+
+            &:hover { background: var(--samra-gold-wash); }
+            &:last-child td { border-bottom: 0; }
+        }
+
+        .is-num { text-align: right; font-variant-numeric: tabular-nums; }
+    }
+
+    .samra-chip {
+        padding: 2px 8px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        border-radius: 2px;
+        background: rgba(26, 22, 20, 0.06);
+        color: var(--samra-ink-soft);
+
+        &--vip {
+            color: var(--samra-gold);
+            background: var(--samra-gold-wash);
+        }
+
+        &--vvip {
+            color: #fff;
+            background: linear-gradient(100deg, var(--samra-gold) 0%, var(--samra-gold-lift) 100%);
+        }
+    }
+
+    // ---------- mini stats ----------
+    .samra-mini {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+
+        > div { display: flex; flex-direction: column; gap: 4px; }
+    }
+
+    .samra-mini__label { @include samra-label; }
+
+    .samra-mini__value {
+        font-family: var(--samra-display);
+        font-size: 19px;
+    }
+
+    // ---------- responsive (requirement 38) ----------
+    @media (max-width: 1200px) {
+        .samra-kpis      { grid-template-columns: repeat(2, 1fr); }
+        .samra-dash__grid { grid-template-columns: 1fr; }
+        .samra-panel--wide { grid-column: auto; }
+    }
+
+    @media (max-width: 767px) {
+        padding: 14px;
+
+        .samra-kpis { grid-template-columns: 1fr; }
+        .samra-mini { grid-template-columns: 1fr; }
+
+        .samra-funnel button {
+            grid-template-columns: 1fr 44px;
+            grid-template-areas:
+                "name  count"
+                "track track"
+                "value value";
+            gap: 4px 8px;
+        }
+
+        .samra-funnel__name  { grid-area: name; }
+        .samra-funnel__track { grid-area: track; }
+        .samra-funnel__count { grid-area: count; }
+        .samra-funnel__value { grid-area: value; text-align: left; }
+
+        // Tables scroll rather than squeeze columns into illegibility.
+        .samra-table { display: block; overflow-x: auto; white-space: nowrap; }
+    }
+}

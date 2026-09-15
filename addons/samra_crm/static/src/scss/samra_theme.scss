@@ -1,0 +1,46 @@
+// Samra design tokens.
+//
+// Dubai fine jewellery: ivory ground, charcoal text, a single restrained gold
+// accent used for emphasis only. Gold is a highlight, not a background -- a
+// gold-washed screen reads as costume, not fine jewellery.
+
+:root {
+    --samra-ink:        #1a1614;
+    --samra-ink-soft:   #6b615a;
+    --samra-ink-faint:  #9a8f87;
+
+    --samra-gold:       #a8842c;
+    --samra-gold-lift:  #c9a548;
+    --samra-gold-wash:  #f5efe1;
+
+    --samra-ground:     #f7f4ef;
+    --samra-surface:    #ffffff;
+    --samra-line:       rgba(26, 22, 20, 0.10);
+    --samra-line-firm:  rgba(26, 22, 20, 0.18);
+
+    --samra-danger:     #a4382f;
+    --samra-danger-wash:#fbeeec;
+    --samra-good:       #2f6b4f;
+    --samra-good-wash:  #eaf3ee;
+
+    --samra-radius:     4px;
+    --samra-gap:        16px;
+
+    // A quiet serif for display text; the stack degrades to whatever the
+    // device has rather than pulling a webfont into the backend bundle.
+    --samra-display: "Georgia", "Times New Roman", serif;
+}
+
+@mixin samra-card-surface {
+    background: var(--samra-surface);
+    border: 1px solid var(--samra-line);
+    border-radius: var(--samra-radius);
+}
+
+@mixin samra-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--samra-ink-faint);
+}

@@ -43,7 +43,13 @@ field types match exactly.
         'security/ir.model.access.csv',
         'views/res_partner_views.xml',
         'views/samra_crm_menus.xml',
+        'views/samra_dashboard_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'samra_crm/static/src/**/*',
+        ],
+    },
     'installable': True,
     'application': True,
     'post_init_hook': 'post_init_hook',
