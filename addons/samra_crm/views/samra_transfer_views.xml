@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_samra_customer_transfer_form" model="ir.ui.view">
+        <field name="name">samra.customer.transfer.form</field>
+        <field name="model">samra.customer.transfer</field>
+        <field name="arch" type="xml">
+            <form string="Transfer Customers">
+                <p class="text-muted">
+                    Reassigns ownership. The customers' full history stays with
+                    them, and every transfer is recorded on the customer's
+                    chatter with the reason given below.
+                </p>
+                <group>
+                    <field name="partner_ids" widget="many2many_tags" readonly="1"/>
+                    <field name="from_user_id"/>
+                    <field name="to_user_id"/>
+                    <field name="reason" placeholder="e.g. Associate left the Deira branch"/>
+                </group>
+                <footer>
+                    <button string="Transfer" name="action_transfer" type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_samra_customer_transfer" model="ir.actions.act_window">
+        <field name="name">Transfer to Salesperson</field>
+        <field name="res_model">samra.customer.transfer</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[(4, ref('sales_team.group_sale_manager'))]"/>
+    </record>
+
+    <!-- Requirement 30: audiences a marketer can actually send to. -->
+    <record id="action_samra_whatsapp_audience" model="ir.actions.server">
+        <field name="name">WhatsApp Audience</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_samra_whatsapp_audience()</field>
+    </record>
+
+    <record id="action_samra_sms_audience" model="ir.actions.server">
+        <field name="name">SMS Audience</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_samra_sms_audience()</field>
+    </record>
+
+    <menuitem id="menu_samra_marketing" name="Marketing Audiences"
+              parent="menu_samra_crm_root" sequence="40"/>
+    <menuitem id="menu_samra_whatsapp_audience" name="WhatsApp Consented"
+              parent="menu_samra_marketing" action="action_samra_whatsapp_audience"
+              sequence="10"/>
+    <menuitem id="menu_samra_sms_audience" name="SMS Consented"
+              parent="menu_samra_marketing" action="action_samra_sms_audience"
+              sequence="20"/>
+
+</odoo>

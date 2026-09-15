@@ -14,6 +14,7 @@
                                 <field name="x_vip_tier" widget="badge"
                                        decoration-info="x_vip_tier == 'vip'"
                                        decoration-success="x_vip_tier == 'vvip'"/>
+                                <field name="x_vip_tier_manual"/>
                                 <field name="x_anniversary"/>
                                 <field name="x_birthday"/>
                                 <field name="x_nationality_id"/>

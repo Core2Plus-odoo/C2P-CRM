@@ -56,16 +56,32 @@ program when absent, so an instance that already has it keeps the old rate —
 correct it by hand. Re-rating already-issued balances is a commercial decision,
 not a migration.
 
+## Customer metrics and tiering
+
+A nightly cron recomputes lifetime value, purchase frequency and last purchase
+date from confirmed orders, then re-tiers customers against thresholds held in
+system parameters (`samra_crm.vip_threshold`, `samra_crm.vvip_threshold`,
+defaulting to AED 100,000 and AED 300,000).
+
+These are stored fields on a schedule rather than computed fields with a
+`depends` on order history: otherwise every confirmation, invoice and POS line
+would invalidate the partner record and the recompute cost would land on the
+till during trading hours.
+
+**Before the first run**, tick *VIP Tier Set Manually* on any customer whose
+tier was assigned by hand — otherwise the cron will reassign them on spend.
+
 ## Known gaps
 
-`doc/REQUIREMENTS.md` has the full picture. The load-bearing ones:
+`doc/REQUIREMENTS.md` has the full picture. The ones still open:
 
-- **No cron populates lifetime value.** Every figure derived from it is only as
-  fresh as whatever last wrote it.
-- **No record rules.** Every internal user sees every branch's customers.
-- **Consent is recorded but not enforced** against campaign targeting.
-- **"VIP Instant Discount" applies to any order over AED 20,000**, regardless
-  of tier.
+- **No record rules.** Every internal user sees every branch's customers. Note
+  this pulls against requirement 22 (one central customer database), so the fix
+  is ownership-aware write access, not branch-scoped visibility.
+- **Consent is enforced at the audience, not at the send.** A hand-written
+  domain in Email Marketing still reaches anyone.
+- **Deletions and discount overrides are not audited.** Transfers now are.
+- **No WhatsApp connector.** The log records; nothing sends.
 
 ## Validation status
 

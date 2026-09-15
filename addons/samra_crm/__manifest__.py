@@ -41,8 +41,10 @@ field types match exactly.
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/samra_cron.xml',
         'views/res_partner_views.xml',
         'views/samra_crm_menus.xml',
+        'views/samra_transfer_views.xml',
         'views/samra_dashboard_views.xml',
     ],
     'assets': {
