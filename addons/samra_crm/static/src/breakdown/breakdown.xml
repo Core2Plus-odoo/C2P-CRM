@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="samra_crm.Breakdown">
+    <div class="samra-bk">
+
+        <div t-if="state.loading" class="samra-bk__msg">Loading…</div>
+        <div t-elif="state.error" class="samra-bk__msg samra-bk__msg--err" t-esc="state.error"/>
+
+        <t t-else="">
+            <t t-set="d" t-value="state.data"/>
+
+            <header class="samra-bk__head">
+                <div>
+                    <button class="samra-bk__back" t-on-click="backToDashboard">
+                        ← Dashboard
+                    </button>
+                    <h1 t-esc="d.title"/>
+                </div>
+                <div class="samra-bk__sum">
+                    <div t-foreach="d.summary" t-as="item" t-key="item.label">
+                        <span t-esc="item.label"/>
+                        <b class="samra-num" t-esc="summaryValue(item)"/>
+                    </div>
+                </div>
+            </header>
+
+            <div class="samra-bk__splits" t-if="d.splits.length">
+                <section class="samra-bk__split" t-foreach="d.splits" t-as="split" t-key="split.title">
+                    <h2 t-esc="split.title"/>
+                    <div class="samra-bk__row" t-foreach="split.rows" t-as="row" t-key="row.label">
+                        <span class="samra-bk__lab" t-esc="row.label"/>
+                        <span class="samra-bk__val samra-num" t-esc="money(row.revenue)"/>
+                        <span class="samra-bk__track">
+                            <span class="samra-bk__fill" t-attf-style="width: {{ row.share }}%"/>
+                        </span>
+                    </div>
+                </section>
+            </div>
+
+            <section class="samra-bk__table">
+                <div t-if="!d.rows.length" class="samra-bk__msg">Nothing in this selection.</div>
+                <table t-else="">
+                    <thead>
+                        <tr>
+                            <th t-foreach="d.columns" t-as="col" t-key="col"
+                                t-att-class="isNumeric(col_index) ? 'is-num' : ''" t-esc="col"/>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="d.rows" t-as="row" t-key="row.id"
+                            t-on-click="() => this.openRow(row)">
+                            <td t-foreach="d.columns" t-as="col" t-key="col_index"
+                                t-att-class="isNumeric(col_index) ? 'is-num samra-num' : ''">
+                                <span t-if="col_index === 1 and row.tier"
+                                      t-att-class="'samra-bk__chip samra-bk__chip--' + row.tier"
+                                      t-esc="cell(row, col_index)"/>
+                                <t t-else="" t-esc="cell(row, col_index)"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="samra-bk__note" t-if="d.truncated">
+                    Showing the first <t t-esc="d.limit"/> records.
+                </p>
+            </section>
+        </t>
+    </div>
+</t>
+
+</templates>

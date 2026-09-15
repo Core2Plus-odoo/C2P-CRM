@@ -206,6 +206,166 @@ class SamraDashboard(models.AbstractModel):
             'domain': [],
         }
 
+
+    # ------------------------------------------------------------------
+    # Drill-down
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _breakdown_orders(self, domain, limit):
+        orders = self.env['sale.order'].search(domain, order='date_order desc', limit=limit)
+        total = sum(orders.mapped('amount_total'))
+
+        by_branch = defaultdict(float)
+        by_person = defaultdict(float)
+        for order in orders:
+            by_branch[order.warehouse_id.display_name or 'Unassigned'] += order.amount_total
+            by_person[order.user_id.display_name or 'Unassigned'] += order.amount_total
+
+        return {
+            'columns': ['Order', 'Date', 'Customer', 'Branch', 'Salesperson', 'Items', 'Total'],
+            'rows': [{
+                'id': order.id,
+                'model': 'sale.order',
+                'cells': [
+                    order.name,
+                    fields.Date.to_string(order.date_order) if order.date_order else '',
+                    order.partner_id.display_name,
+                    order.warehouse_id.display_name or '',
+                    order.user_id.display_name or '',
+                    int(sum(line.product_uom_qty for line in order.order_line
+                            if line.product_id and not line.display_type)),
+                    order.amount_total,
+                ],
+                'partner_id': order.partner_id.id,
+                'amount': order.amount_total,
+            } for order in orders],
+            'numeric_from': 5,
+            'summary': [
+                {'label': 'Orders', 'value': len(orders), 'money': False},
+                {'label': 'Total', 'value': total, 'money': True},
+                {'label': 'Average', 'value': (total / len(orders)) if orders else 0.0, 'money': True},
+                {'label': 'Customers', 'value': len(orders.mapped('partner_id')), 'money': False},
+            ],
+            'splits': [
+                {'title': 'By Branch', 'rows': self._split_rows(by_branch)},
+                {'title': 'By Salesperson', 'rows': self._split_rows(by_person)},
+            ],
+        }
+
+    @api.model
+    def _breakdown_leads(self, domain, limit):
+        leads = self.env['crm.lead'].search(domain, order='expected_revenue desc', limit=limit)
+        total = sum(leads.mapped('expected_revenue'))
+
+        by_stage = defaultdict(float)
+        for lead in leads:
+            by_stage[lead.stage_id.display_name or 'Unassigned'] += lead.expected_revenue
+
+        return {
+            'columns': ['Opportunity', 'Customer', 'Stage', 'Salesperson', 'Expected'],
+            'rows': [{
+                'id': lead.id,
+                'model': 'crm.lead',
+                'cells': [
+                    lead.name,
+                    lead.partner_id.display_name or '',
+                    lead.stage_id.display_name or '',
+                    lead.user_id.display_name or '',
+                    lead.expected_revenue,
+                ],
+                'partner_id': lead.partner_id.id,
+                'amount': lead.expected_revenue,
+            } for lead in leads],
+            'numeric_from': 4,
+            'summary': [
+                {'label': 'Opportunities', 'value': len(leads), 'money': False},
+                {'label': 'Expected', 'value': total, 'money': True},
+                {'label': 'Average', 'value': (total / len(leads)) if leads else 0.0, 'money': True},
+            ],
+            'splits': [{'title': 'By Stage', 'rows': self._split_rows(by_stage)}],
+        }
+
+    @api.model
+    def _breakdown_customers(self, domain, limit):
+        partners = self.env['res.partner'].search(
+            domain, order='x_lifetime_value desc', limit=limit)
+        total = sum(partners.mapped('x_lifetime_value'))
+        today = fields.Date.today()
+
+        by_tier = defaultdict(float)
+        for partner in partners:
+            by_tier[VIP_TIER_LABELS.get(partner.x_vip_tier or 'regular', 'Regular')] += \
+                partner.x_lifetime_value
+
+        return {
+            'columns': ['Customer', 'Tier', 'Salesperson', 'Last Purchase',
+                        'Days Inactive', 'Lifetime Value'],
+            'rows': [{
+                'id': partner.id,
+                'model': 'res.partner',
+                'cells': [
+                    partner.display_name,
+                    VIP_TIER_LABELS.get(partner.x_vip_tier or 'regular', 'Regular'),
+                    partner.user_id.display_name or '',
+                    fields.Date.to_string(partner.x_last_purchase_date)
+                    if partner.x_last_purchase_date else 'never',
+                    (today - partner.x_last_purchase_date).days
+                    if partner.x_last_purchase_date else '',
+                    partner.x_lifetime_value,
+                ],
+                'partner_id': partner.id,
+                'amount': partner.x_lifetime_value,
+                'tier': partner.x_vip_tier or 'regular',
+            } for partner in partners],
+            'numeric_from': 4,
+            'summary': [
+                {'label': 'Customers', 'value': len(partners), 'money': False},
+                {'label': 'Lifetime Value', 'value': total, 'money': True},
+                {'label': 'Average', 'value': (total / len(partners)) if partners else 0.0,
+                 'money': True},
+            ],
+            'splits': [{'title': 'By Tier', 'rows': self._split_rows(by_tier)}],
+        }
+
+    @api.model
+    def _split_rows(self, totals):
+        """Rank a {label: amount} map and give each row its share of the peak."""
+        rows = sorted(
+            ({'label': label, 'revenue': amount} for label, amount in totals.items()),
+            key=lambda row: row['revenue'], reverse=True)
+        peak = max((row['revenue'] for row in rows), default=0.0)
+        for row in rows:
+            row['share'] = (row['revenue'] / peak * 100) if peak else 0.0
+        return rows
+
+    @api.model
+    def get_breakdown(self, kind, domain=None, title=None, limit=200):
+        """Records behind a dashboard figure, shaped for the breakdown screen.
+
+        The dashboard hands back the same domain that produced the number, so
+        the screen and the figure cannot disagree. Rows come pre-formatted
+        because this is a presentation surface, not a generic list view -- the
+        client should not need to know that a branch lives on warehouse_id.
+        """
+        handlers = {
+            'orders': self._breakdown_orders,
+            'leads': self._breakdown_leads,
+            'customers': self._breakdown_customers,
+        }
+        if kind not in handlers:
+            raise ValueError(f"Unknown breakdown kind {kind!r}.")
+
+        payload = handlers[kind](domain or [], limit)
+        payload.update({
+            'kind': kind,
+            'title': title or kind.title(),
+            'currency': self.env.company.currency_id.name or 'AED',
+            'limit': limit,
+            'truncated': len(payload['rows']) >= limit,
+        })
+        return payload
+
     # ------------------------------------------------------------------
     # Entry point
     # ------------------------------------------------------------------
