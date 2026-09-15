@@ -1,45 +1,107 @@
 # -*- coding: utf-8 -*-
 """
-Post-install hook: safely establishes the Samra sales pipeline stages and
-lost reasons using get-or-create by name, rather than declarative XML data
-records. This is deliberate — see the note in data/crm_lost_reason_data.xml
-placeholder removal: these records may already exist on an instance where
-this module is being installed on top of earlier Studio-style prototyping,
-and a plain <record> would create duplicates instead of adopting them.
+Post-install hook: establishes the Samra sales pipeline stages, lost reasons
+and loyalty programs using get-or-create by name rather than declarative XML
+records.
+
+This is deliberate. These records may already exist on an instance where the
+module is installed on top of earlier Studio-style prototyping, and a plain
+<record> would create duplicates instead of adopting them.
 
 Safe to run on:
   - A fresh Odoo instance (creates everything from scratch)
-  - The already-customized Samra instance (finds existing records by name,
-    only touches sequence/is_won if missing, creates nothing extra)
+  - The already-customized Samra instance (adopts existing records by name)
 """
+
+import logging
+
+_logger = logging.getLogger(__name__)
+
+# The Samra pipeline. Exactly one stage may be the winning stage.
+STAGE_SPECS = [
+    ('New Lead', 10),
+    ('Contacted', 20),
+    ('Appointment', 30),
+    ('Store Visit', 40),
+    ('Quotation', 50),
+    ('Follow-Up', 60),
+    ('Sold', 70),
+]
+WON_STAGE_NAME = 'Sold'
+
+LOST_REASONS = [
+    'Price',
+    'Product Unavailable',
+    'Customer Postponed',
+    'Competitor Purchase',
+    'Other',
+]
+
+# Samra Rewards: 1 point per AED 10 spent.
+#
+# reward_point_mode='money' grants `reward_point_amount` points per unit of
+# currency, so the rate is the points-per-AED figure -- 0.1, not 10. An earlier
+# version set amount=1 with minimum_amount=10, reading minimum_amount as a
+# divisor; it is an order qualification threshold, and the program granted
+# 1 point per AED 1 -- ten times the intended rate.
+POINTS_PER_AED = 0.1
+
+VIP_TIERS_FOR_INSTANT_DISCOUNT = ('vip', 'vvip')
 
 
 def post_init_hook(env):
-    Stage = env['crm.stage']
-    stage_specs = [
-        ('New Lead', 10, False),
-        ('Contacted', 20, False),
-        ('Appointment', 30, False),
-        ('Store Visit', 40, False),
-        ('Quotation', 50, False),
-        ('Follow-Up', 60, False),
-        ('Sold', 70, True),
-    ]
-    for name, sequence, is_won in stage_specs:
-        existing = Stage.search([('name', '=', name)], limit=1)
-        if existing:
-            # Make sure sequence/is_won reflect the intended pipeline order,
-            # in case they drifted, but don't touch anything else about it.
-            existing.write({'sequence': sequence, 'is_won': is_won})
-        else:
-            Stage.create({'name': name, 'sequence': sequence, 'is_won': is_won})
+    _setup_pipeline(env)
+    _setup_lost_reasons(env)
+    _setup_loyalty_programs(env)
 
+
+def _find_stage(env, name):
+    """Find a pipeline stage by name, preferring one shared across all teams.
+
+    Searching on name alone would adopt -- and then rewrite the sequence of --
+    a stage belonging to some unrelated sales team that happens to share a
+    name. Shared stages (team_id unset) are the ones this pipeline owns.
+    """
+    Stage = env['crm.stage']
+    shared = Stage.search([('name', '=', name), ('team_id', '=', False)], limit=1)
+    return shared or Stage.search([('name', '=', name)], limit=1)
+
+
+def _setup_pipeline(env):
+    Stage = env['crm.stage']
+
+    stages = env['crm.stage'].browse()
+    for name, sequence in STAGE_SPECS:
+        existing = _find_stage(env, name)
+        if existing:
+            # Realign ordering in case it drifted, but leave everything else
+            # about the stage alone.
+            existing.write({'sequence': sequence, 'is_won': name == WON_STAGE_NAME})
+            stages |= existing
+        else:
+            stages |= Stage.create({
+                'name': name,
+                'sequence': sequence,
+                'is_won': name == WON_STAGE_NAME,
+            })
+
+    # Odoo's CRM ships its own winning stage ("Won"). Left alone, the pipeline
+    # ends up with two stages flagged is_won, which splits won-deal reporting
+    # between them. Samra's pipeline wins at "Sold", so stand the others down.
+    other_won = env['crm.stage'].search([('is_won', '=', True), ('id', 'not in', stages.ids)])
+    if other_won:
+        _logger.info(
+            "Samra CRM: clearing is_won on %s so '%s' is the only winning stage",
+            other_won.mapped('name'), WON_STAGE_NAME,
+        )
+        other_won.write({'is_won': False})
+
+
+def _setup_lost_reasons(env):
     LostReason = env['crm.lost.reason']
-    for name in ['Price', 'Product Unavailable', 'Customer Postponed', 'Competitor Purchase', 'Other']:
+    for name in LOST_REASONS:
         if not LostReason.search([('name', '=', name)], limit=1):
             LostReason.create({'name': name})
-
-    _setup_loyalty_programs(env)
 
 
 def _setup_loyalty_programs(env):
@@ -53,9 +115,8 @@ def _setup_loyalty_programs(env):
             'applies_on': 'both',
             'portal_visible': True,
             'rule_ids': [(0, 0, {
-                'reward_point_amount': 1,
+                'reward_point_amount': POINTS_PER_AED,
                 'reward_point_mode': 'money',
-                'minimum_amount': 10,  # 1 point per AED 10 spent
                 'reward_point_name': 'Points',
             })],
             'reward_ids': [
@@ -67,6 +128,12 @@ def _setup_loyalty_programs(env):
                         'discount_applicability': 'order', 'required_points': 500}),
             ],
         })
+    else:
+        _logger.info(
+            "Samra CRM: 'Samra Rewards' already exists; leaving its earning rate alone. "
+            "If it was created with the 1-point-per-AED rate, correct it manually -- "
+            "already-issued balances are a commercial decision, not a migration."
+        )
 
     if not Program.search([('name', '=', 'VIP Instant Discount')], limit=1):
         Program.create({
@@ -76,7 +143,7 @@ def _setup_loyalty_programs(env):
             'applies_on': 'current',
             'portal_visible': False,
             'rule_ids': [(0, 0, {
-                'minimum_amount': 20000,  # proxy threshold for high-value/VIP-level orders
+                'minimum_amount': 20000,
                 'reward_point_amount': 1,
                 'reward_point_mode': 'order',
             })],

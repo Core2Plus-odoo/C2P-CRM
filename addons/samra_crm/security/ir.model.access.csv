@@ -1,4 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_samra_wishlist_user,samra.wishlist.user,model_x_samra_wishlist,base.group_user,1,1,1,1
-access_samra_viewed_product_user,samra.viewed.product.user,model_x_samra_viewed_product,base.group_user,1,1,1,1
-access_samra_whatsapp_log_user,samra.whatsapp.log.user,model_x_samra_whatsapp_log,base.group_user,1,1,1,1
+access_samra_wishlist_user,samra.wishlist.user,model_x_samra_wishlist,base.group_user,1,1,1,0
+access_samra_wishlist_manager,samra.wishlist.manager,model_x_samra_wishlist,sales_team.group_sale_manager,1,1,1,1
+access_samra_viewed_product_user,samra.viewed.product.user,model_x_samra_viewed_product,base.group_user,1,1,1,0
+access_samra_viewed_product_manager,samra.viewed.product.manager,model_x_samra_viewed_product,sales_team.group_sale_manager,1,1,1,1
+access_samra_whatsapp_log_user,samra.whatsapp.log.user,model_x_samra_whatsapp_log,base.group_user,1,1,1,0
+access_samra_whatsapp_log_manager,samra.whatsapp.log.manager,model_x_samra_whatsapp_log,sales_team.group_sale_manager,1,1,1,1
