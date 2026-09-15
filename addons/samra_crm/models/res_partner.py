@@ -360,5 +360,6 @@ class ResPartner(models.Model):
             'currency': self.env.company.currency_id.name or 'AED',
             'at_risk_days': AT_RISK_DAYS,
             'analytics': self._samra_analytics(),
+            'recommendations': self._samra_recommendations(),
             'capture_branch': self._samra_default_branch().display_name or '',
         }

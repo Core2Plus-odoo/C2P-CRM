@@ -347,6 +347,41 @@
 
                     <section class="samra-card">
                         <div class="samra-card__h">
+                            <h2>Recommended Next</h2>
+                            <span class="samra-note" t-if="d.recommendations.considered">
+                                <t t-esc="d.recommendations.considered"/> considered
+                                <t t-if="d.recommendations.budget"> ·
+                                    around <t t-esc="money(d.recommendations.budget)"/>
+                                </t>
+                            </span>
+                        </div>
+                        <div t-if="!d.recommendations.products.length" class="samra-empty">
+                            Not enough history yet to suggest anything.
+                        </div>
+                        <ul t-else="" class="samra-recs">
+                            <li t-foreach="d.recommendations.products" t-as="rec" t-key="rec.id">
+                                <button class="samra-rec"
+                                        t-on-click="() => this.openRecord('product.product', rec.id, rec.name)">
+                                    <img class="samra-rec__img" t-att-src="productImage(rec.id)"
+                                         t-att-alt="rec.name"/>
+                                    <span class="samra-rec__b">
+                                        <span class="samra-rec__n" t-esc="rec.name"/>
+                                        <span class="samra-rec__w">
+                                            <span t-foreach="rec.reasons" t-as="reason"
+                                                  t-key="reason" class="samra-rec__r"
+                                                  t-esc="reason"/>
+                                        </span>
+                                        <span class="samra-rec__m" t-if="rec.meta"
+                                              t-esc="rec.meta"/>
+                                    </span>
+                                    <span class="samra-rec__p samra-num" t-esc="money(rec.price)"/>
+                                </button>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="samra-card">
+                        <div class="samra-card__h">
                             <h2>Viewed Products</h2>
                             <button class="samra-link" t-on-click="openViewed">View all</button>
                         </div>
