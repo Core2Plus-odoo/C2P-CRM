@@ -1,5 +1,3 @@
-@import "../scss/samra_theme";
-
 .samra-360 {
     height: 100%;
     overflow: auto;
@@ -196,12 +194,21 @@
         @include samra-card-surface;
         transition: border-color 0.12s ease, transform 0.12s ease;
 
-        &:hover:not(&--static) {
+        &:hover {
             border-color: var(--samra-gold);
             transform: translateY(-1px);
         }
 
-        &--static { cursor: default; }
+        // Static tiles carry both classes, so this later rule of equal
+        // specificity takes the hover treatment back off.
+        &--static {
+            cursor: default;
+
+            &:hover {
+                border-color: var(--samra-line);
+                transform: none;
+            }
+        }
 
         &.is-at-risk {
             border-left: 3px solid var(--samra-danger);
@@ -584,8 +591,11 @@
     .samra-capture__sheet {
         display: flex;
         flex-direction: column;
-        width: min(760px, 100%);
-        max-height: min(88vh, 760px);
+        width: 760px;
+        max-width: 100%;
+        // Interpolated so Sass emits this verbatim. libsass reads a bare
+        // min() as its own function and fails on mixed units.
+        max-height: #{"min(88vh, 760px)"};
         padding: 20px 22px;
         background: var(--samra-surface);
         border-radius: 6px;

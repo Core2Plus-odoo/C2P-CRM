@@ -197,10 +197,10 @@
                 <div class="samra-stat samra-stat--static">
                     <span class="samra-stat__label">Loyalty Points</span>
                     <span class="samra-stat__value">
-                        <t t-esc="Math.round(d.loyalty.points || 0).toLocaleString()"/>
+                        <t t-esc="points(d.loyalty.points)"/>
                     </span>
                     <span class="samra-stat__hint" t-if="d.loyalty.rewards.length">
-                        <t t-esc="d.loyalty.rewards.filter(function (r) { return r.affordable; }).length"/>
+                        <t t-esc="affordableRewards"/>
                         reward(s) available
                     </span>
                 </div>

@@ -24,7 +24,7 @@
                         <option value="">All branches</option>
                         <option t-foreach="state.options.branches" t-as="branch" t-key="branch.id"
                                 t-att-value="branch.id"
-                                t-att-selected="String(branch.id) === String(state.filters.warehouse_id)"
+                                t-att-selected="isSelected(branch.id, state.filters.warehouse_id)"
                                 t-esc="branch.name"/>
                     </select>
                 </label>
@@ -34,7 +34,7 @@
                         <option value="">Everyone</option>
                         <option t-foreach="state.options.salespeople" t-as="person" t-key="person.id"
                                 t-att-value="person.id"
-                                t-att-selected="String(person.id) === String(state.filters.user_id)"
+                                t-att-selected="isSelected(person.id, state.filters.user_id)"
                                 t-esc="person.name"/>
                     </select>
                 </label>
@@ -235,12 +235,12 @@
                         <div>
                             <span class="samra-mini__label">Points Outstanding</span>
                             <span class="samra-mini__value"
-                                  t-esc="Math.round(d.loyalty.points_outstanding).toLocaleString()"/>
+                                  t-esc="points(d.loyalty.points_outstanding)"/>
                         </div>
                         <div>
                             <span class="samra-mini__label">Points Redeemed</span>
                             <span class="samra-mini__value"
-                                  t-esc="Math.round(d.loyalty.points_redeemed).toLocaleString()"/>
+                                  t-esc="points(d.loyalty.points_redeemed)"/>
                         </div>
                     </div>
                 </section>
