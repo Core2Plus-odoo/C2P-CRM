@@ -6,7 +6,7 @@
 
         <div t-if="state.loading" class="samra-placeholder">
             <span class="samra-spinner"/>
-            <p>Loading customer profile…</p>
+            <p>Loading client dossier…</p>
         </div>
 
         <div t-elif="state.error" class="samra-placeholder samra-placeholder--error">
@@ -14,91 +14,141 @@
         </div>
 
         <t t-else="">
-                <t t-set="d" t-value="state.data"/>
+            <t t-set="d" t-value="state.data"/>
+            <t t-set="a" t-value="d.analytics"/>
 
-                <!-- ============ Header ============ -->
-                <header class="samra-header">
+            <!-- ============ Hero ============ -->
+            <header class="samra-hero">
+                <div class="samra-hero__top">
                     <img class="samra-avatar" t-att-src="d.avatar" t-att-alt="d.name"/>
 
-                    <div class="samra-header__identity">
-                        <div class="samra-header__nameline">
-                            <h1 class="samra-name" t-esc="d.name"/>
+                    <div class="samra-who">
+                        <div class="samra-eyebrow">Client Dossier · Samra Jewellery</div>
+                        <h1 class="samra-name" t-esc="d.name"/>
+
+                        <div class="samra-chips">
                             <span t-att-class="'samra-tier samra-tier--' + d.vip_tier"
                                   t-esc="d.vip_tier_label"/>
+                            <span class="samra-chip samra-chip--gold"
+                                  t-foreach="d.tags" t-as="tag" t-key="tag.id" t-esc="tag.name"/>
+                            <span class="samra-chip" t-if="d.consent.whatsapp">WhatsApp opted in</span>
+                            <span class="samra-chip" t-if="d.consent.sms">SMS opted in</span>
                         </div>
 
-                        <div class="samra-header__meta">
-                            <span t-if="d.salesperson">
-                                <span class="samra-muted">Salesperson</span>
-                                <t t-esc="d.salesperson"/>
+                        <div class="samra-facts">
+                            <span class="samra-fact" t-if="a.first_purchase">
+                                <span>Client since</span><b t-esc="formatDate(a.first_purchase)"/>
                             </span>
-                            <span t-if="d.nationality">
-                                <span class="samra-muted">Nationality</span>
-                                <t t-esc="d.nationality"/>
+                            <span class="samra-fact" t-if="d.salesperson">
+                                <span>Salesperson</span><b t-esc="d.salesperson"/>
                             </span>
-                            <span t-if="d.city">
-                                <span class="samra-muted">City</span>
-                                <t t-esc="d.city"/>
+                            <span class="samra-fact" t-if="d.nationality">
+                                <span>Nationality</span><b t-esc="d.nationality"/>
                             </span>
-                            <span t-if="d.birthday">
-                                <span class="samra-muted">Birthday</span>
-                                <t t-esc="formatDate(d.birthday)"/>
+                            <span class="samra-fact" t-if="d.city">
+                                <span>City</span><b t-esc="d.city"/>
                             </span>
-                            <span t-if="d.anniversary">
-                                <span class="samra-muted">Anniversary</span>
-                                <t t-esc="formatDate(d.anniversary)"/>
+                            <span class="samra-fact" t-if="d.birthday">
+                                <span>Birthday</span><b t-esc="formatDate(d.birthday)"/>
                             </span>
-                        </div>
-
-                        <div class="samra-tags" t-if="d.tags.length">
-                            <span class="samra-tag" t-foreach="d.tags" t-as="tag" t-key="tag.id"
-                                  t-esc="tag.name"/>
+                            <span class="samra-fact" t-if="d.anniversary">
+                                <span>Anniversary</span><b t-esc="formatDate(d.anniversary)"/>
+                            </span>
+                            <span class="samra-fact" t-if="d.phone">
+                                <span>Phone</span><b class="samra-num" t-esc="d.phone"/>
+                            </span>
                         </div>
                     </div>
 
-                    <div class="samra-header__actions">
-                        <a class="samra-action" t-if="telHref" t-att-href="telHref" title="Call">
-                            <i class="fa fa-phone"/><span>Call</span>
-                        </a>
-                        <a class="samra-action samra-action--wa" t-if="whatsappHref"
-                           t-att-href="whatsappHref" target="_blank" title="WhatsApp">
+                    <div class="samra-acts">
+                        <a class="samra-act samra-act--pri" t-if="whatsappHref"
+                           t-att-href="whatsappHref" target="_blank">
                             <i class="fa fa-whatsapp"/><span>WhatsApp</span>
                         </a>
-                        <a class="samra-action" t-if="mailHref" t-att-href="mailHref" title="Email">
+                        <a class="samra-act" t-if="telHref" t-att-href="telHref">
+                            <i class="fa fa-phone"/><span>Call</span>
+                        </a>
+                        <a class="samra-act" t-if="mailHref" t-att-href="mailHref">
                             <i class="fa fa-envelope"/><span>Email</span>
                         </a>
-                        <button class="samra-action samra-action--primary" t-on-click="openCapture">
+                        <button class="samra-act" t-on-click="openCapture">
                             <i class="fa fa-diamond"/><span>Showing Products</span>
                         </button>
-                        <button class="samra-action samra-action--ghost" t-on-click="openContactForm">
+                        <button class="samra-act samra-act--ghost" t-on-click="openContactForm">
                             <i class="fa fa-pencil"/><span>Edit</span>
                         </button>
                     </div>
-                </header>
-
-                <!-- Consent is a compliance fact, so state it plainly rather than
-                     burying it in a settings tab. -->
-                <div class="samra-consent">
-                    <span t-att-class="'samra-consent__pill ' + (d.consent.whatsapp ? 'is-on' : 'is-off')">
-                        <i t-att-class="d.consent.whatsapp ? 'fa fa-check' : 'fa fa-ban'"/>
-                        WhatsApp marketing
-                    </span>
-                    <span t-att-class="'samra-consent__pill ' + (d.consent.sms ? 'is-on' : 'is-off')">
-                        <i t-att-class="d.consent.sms ? 'fa fa-check' : 'fa fa-ban'"/>
-                        SMS marketing
-                    </span>
                 </div>
 
-                <!-- Showing-room capture -->
-                <div t-if="capture.open" class="samra-capture" role="dialog" aria-label="Record products shown">
-                    <div class="samra-capture__sheet">
-                        <div class="samra-capture__head">
-                            <div>
-                                <h2>Showing Products</h2>
-                                <p>
-                                    Scan or search, tap to add to the tray, save once when you are done.
-                                    <t t-if="d.capture_branch">
-                                        Logged against <strong t-esc="d.capture_branch"/>.
+                <!-- ============ KPI rail ============ -->
+                <div class="samra-rail">
+                    <button class="samra-kpi" t-on-click="openOrders">
+                        <span class="samra-kpi__k">Lifetime Value</span>
+                        <span class="samra-kpi__v samra-num" t-esc="plain(a.lifetime_value)"/>
+                        <span class="samra-kpi__s">
+                            <t t-esc="currency"/> · <t t-esc="a.order_count"/> orders
+                        </span>
+                    </button>
+
+                    <div class="samra-kpi samra-kpi--static">
+                        <span class="samra-kpi__k">Avg. Order</span>
+                        <span class="samra-kpi__v samra-num" t-esc="plain(a.average_order_value)"/>
+                        <span class="samra-kpi__s"><t t-esc="currency"/> per order</span>
+                    </div>
+
+                    <div class="samra-kpi samra-kpi--static">
+                        <span class="samra-kpi__k">Gold Acquired</span>
+                        <span class="samra-kpi__v samra-num">
+                            <t t-esc="grams(a.gold_weight)"/><small>g</small>
+                        </span>
+                        <span class="samra-kpi__s"><t t-esc="plain(a.pieces)"/> pieces</span>
+                    </div>
+
+                    <div t-att-class="'samra-kpi samra-kpi--static' + (d.stats.at_risk ? ' is-risk' : '')">
+                        <span class="samra-kpi__k">Last Purchase</span>
+                        <span class="samra-kpi__v samra-num" t-esc="formatDate(a.last_purchase)"/>
+                        <span class="samra-kpi__s" t-if="d.stats.at_risk">
+                            <t t-esc="d.stats.days_since_purchase"/> days — at risk
+                        </span>
+                        <span class="samra-kpi__s" t-elif="d.stats.days_since_purchase !== null">
+                            <t t-esc="d.stats.days_since_purchase"/> days ago
+                        </span>
+                        <span class="samra-kpi__s" t-else="">No purchase on record</span>
+                    </div>
+
+                    <div class="samra-kpi samra-kpi--static">
+                        <span class="samra-kpi__k">Cadence</span>
+                        <span class="samra-kpi__v samra-num" t-if="a.cadence.average_days">
+                            <t t-esc="a.cadence.average_days"/><small>days</small>
+                        </span>
+                        <span class="samra-kpi__v samra-num" t-else="">—</span>
+                        <span class="samra-kpi__s is-down" t-if="a.cadence.slowing">
+                            slowing — now <t t-esc="a.cadence.recent_days"/>
+                        </span>
+                        <span class="samra-kpi__s" t-elif="a.cadence.average_days">between orders</span>
+                        <span class="samra-kpi__s" t-else="">Too few orders</span>
+                    </div>
+
+                    <div class="samra-kpi samra-kpi--static">
+                        <span class="samra-kpi__k">Loyalty Points</span>
+                        <span class="samra-kpi__v samra-num" t-esc="points(d.loyalty.points)"/>
+                        <span class="samra-kpi__s" t-if="d.loyalty.rewards.length">
+                            <t t-esc="affordableRewards"/> reward(s) available
+                        </span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ============ Capture sheet ============ -->
+            <div t-if="capture.open" class="samra-capture" role="dialog" aria-label="Record products shown">
+                <div class="samra-capture__sheet">
+                    <div class="samra-capture__head">
+                        <div>
+                            <h2>Showing Products</h2>
+                            <p>
+                                Scan or search, tap to add to the tray, save once when you are done.
+                                <t t-if="d.capture_branch">
+                                    Logged against <strong t-esc="d.capture_branch"/>.
                                 </t>
                             </p>
                         </div>
@@ -106,30 +156,21 @@
                                 aria-label="Close">×</button>
                     </div>
 
-                    <input class="samra-capture__input"
-                           type="text"
-                           autofocus="autofocus"
+                    <input class="samra-capture__input" type="text" autofocus="autofocus"
                            placeholder="Scan a tag or type a name / SKU…"
-                           t-on-input="onCaptureInput"
-                           t-on-keydown="onCaptureKeydown"/>
+                           t-on-input="onCaptureInput" t-on-keydown="onCaptureKeydown"/>
 
                     <div t-if="capture.tray.length" class="samra-tray">
-                        <span class="samra-tray__label">
-                            Tray · <t t-esc="capture.tray.length"/>
-                        </span>
-                        <span class="samra-tray__item" t-foreach="capture.tray" t-as="item"
-                              t-key="item.id">
+                        <span class="samra-tray__label">Tray · <t t-esc="capture.tray.length"/></span>
+                        <span class="samra-tray__item" t-foreach="capture.tray" t-as="item" t-key="item.id">
                             <t t-esc="item.name"/>
-                            <button t-on-click="() => this.removeFromTray(item.id)"
-                                    aria-label="Remove">×</button>
+                            <button t-on-click="() => this.removeFromTray(item.id)" aria-label="Remove">×</button>
                         </span>
                     </div>
 
                     <div class="samra-capture__results">
                         <div t-if="capture.searching" class="samra-empty">Searching…</div>
-                        <div t-elif="!capture.results.length" class="samra-empty">
-                            No matching products.
-                        </div>
+                        <div t-elif="!capture.results.length" class="samra-empty">No matching products.</div>
                         <t t-else="">
                             <button t-foreach="capture.results" t-as="product" t-key="product.id"
                                     t-att-class="'samra-pick' + (inTray(product.id) ? ' is-picked' : '')"
@@ -147,64 +188,15 @@
                     <div t-if="capture.message" class="samra-capture__msg" t-esc="capture.message"/>
 
                     <div class="samra-capture__foot">
-                        <button class="samra-action samra-action--ghost" t-on-click="closeCapture">
-                            Done
-                        </button>
-                        <button class="samra-action"
+                        <button class="samra-act samra-act--ghost" t-on-click="closeCapture">Done</button>
+                        <button class="samra-act" t-att-disabled="!capture.tray.length or capture.saving"
+                                t-on-click="() => this.saveCapture(false)">Log as shown</button>
+                        <button class="samra-act samra-act--pri"
                                 t-att-disabled="!capture.tray.length or capture.saving"
-                                t-on-click="() => this.saveCapture(false)">
-                            Log as shown
-                        </button>
-                        <button class="samra-action samra-action--primary"
-                                t-att-disabled="!capture.tray.length or capture.saving"
-                                t-on-click="() => this.saveCapture(true)">
-                            Log + add to wishlist
-                        </button>
+                                t-on-click="() => this.saveCapture(true)">Log + add to wishlist</button>
                     </div>
                 </div>
             </div>
-
-            <!-- ============ At-a-glance stats ============ -->
-            <section class="samra-stats">
-                <button class="samra-stat" t-on-click="openOrders">
-                    <span class="samra-stat__label">Lifetime Value</span>
-                    <span class="samra-stat__value" t-esc="money(d.stats.lifetime_value)"/>
-                    <span class="samra-stat__hint">View purchases</span>
-                </button>
-
-                <button class="samra-stat" t-on-click="openOrders">
-                    <span class="samra-stat__label">Purchase Frequency</span>
-                    <span class="samra-stat__value">
-                        <t t-esc="d.stats.purchase_frequency || 0"/>
-                        <small>orders</small>
-                    </span>
-                    <span class="samra-stat__hint">View purchases</span>
-                </button>
-
-                <div t-att-class="'samra-stat samra-stat--static' + (d.stats.at_risk ? ' is-at-risk' : '')">
-                    <span class="samra-stat__label">Last Purchase</span>
-                    <span class="samra-stat__value" t-esc="formatDate(d.stats.last_purchase_date)"/>
-                    <span class="samra-stat__hint" t-if="d.stats.at_risk">
-                        <i class="fa fa-exclamation-triangle"/>
-                        <t t-esc="d.stats.days_since_purchase"/> days — at risk
-                    </span>
-                    <span class="samra-stat__hint" t-elif="d.stats.days_since_purchase !== null">
-                        <t t-esc="d.stats.days_since_purchase"/> days ago
-                    </span>
-                    <span class="samra-stat__hint" t-else="">No purchase on record</span>
-                </div>
-
-                <div class="samra-stat samra-stat--static">
-                    <span class="samra-stat__label">Loyalty Points</span>
-                    <span class="samra-stat__value">
-                        <t t-esc="points(d.loyalty.points)"/>
-                    </span>
-                    <span class="samra-stat__hint" t-if="d.loyalty.rewards.length">
-                        <t t-esc="affordableRewards"/>
-                        reward(s) available
-                    </span>
-                </div>
-            </section>
 
             <!-- ============ Body ============ -->
             <div class="samra-grid">
@@ -213,82 +205,151 @@
                 <div class="samra-col">
 
                     <section class="samra-card">
-                        <div class="samra-card__head">
-                            <h2>Purchase History</h2>
-                            <button class="samra-link" t-on-click="openOrders">View all</button>
+                        <div class="samra-card__h">
+                            <h2>Spend — Last <t t-esc="a.months"/> Months</h2>
+                            <span class="samra-note">
+                                <t t-esc="currency"/> · bars revenue · line orders
+                            </span>
                         </div>
+                        <div class="samra-chartbox">
+                            <svg class="samra-trend" viewBox="0 0 760 190" role="img"
+                                 aria-label="Monthly spend and order count">
+                                <defs>
+                                    <linearGradient id="samraBar" x1="0" y1="1" x2="0" y2="0">
+                                        <stop offset="0%" stop-color="var(--samra-bar-b)"/>
+                                        <stop offset="100%" stop-color="var(--samra-bar-a)"/>
+                                    </linearGradient>
+                                </defs>
 
-                        <div t-if="!d.orders.length" class="samra-empty">
-                            No confirmed purchases yet.
+                                <t t-foreach="trendAxis" t-as="tick" t-key="tick.label">
+                                    <line x1="40" t-att-y1="tick.y" t-att-x2="trendRight" t-att-y2="tick.y"
+                                          t-att-stroke="tick.label === '0' ? 'var(--samra-grid-firm)' : 'var(--samra-grid)'"
+                                          stroke-width="1"/>
+                                    <text x="34" t-att-y="tick.y + 3" text-anchor="end" t-esc="tick.label"/>
+                                </t>
+
+                                <t t-foreach="trendBars" t-as="bar" t-key="bar.key">
+                                    <rect t-att-x="bar.x" t-att-y="bar.y" t-att-width="bar.width"
+                                          t-att-height="bar.height" rx="2" fill="url(#samraBar)"/>
+                                    <text t-att-x="bar.centre" t-att-y="bar.valueY" text-anchor="middle"
+                                          class="samra-trend__val" t-esc="bar.value"/>
+                                    <text t-att-x="bar.centre" y="170" text-anchor="middle" t-esc="bar.label"/>
+                                    <text t-att-x="bar.centre" y="184" text-anchor="middle"
+                                          class="samra-trend__val" t-esc="bar.orders"/>
+                                </t>
+
+                                <polyline t-att-points="trendLine" fill="none"
+                                          stroke="var(--samra-chart-line)" stroke-width="1.5"
+                                          stroke-linejoin="round"/>
+                                <circle t-foreach="trendBars" t-as="bar" t-key="bar.key"
+                                        t-att-cx="bar.centre" t-att-cy="bar.lineY" r="3"
+                                        fill="var(--samra-chart-line)"/>
+                            </svg>
                         </div>
-
-                        <ol t-else="" class="samra-timeline">
-                            <li class="samra-timeline__item" t-foreach="d.orders" t-as="order"
-                                t-key="order.id">
-                                <div class="samra-timeline__marker"/>
-                                <div class="samra-timeline__body">
-                                    <div class="samra-timeline__top">
-                                        <button class="samra-order-ref"
-                                                t-on-click="() => this.openRecord('sale.order', order.id, order.name)"
-                                                t-esc="order.name"/>
-                                        <span class="samra-order-total" t-esc="money(order.amount_total)"/>
-                                    </div>
-                                    <div class="samra-timeline__meta">
-                                        <span t-esc="formatDate(order.date)"/>
-                                        <span t-if="order.branch" t-esc="order.branch"/>
-                                        <span t-if="order.salesperson" t-esc="order.salesperson"/>
-                                        <span t-if="order.invoices.length"
-                                              t-esc="order.invoices.join(', ')"/>
-                                    </div>
-                                    <ul class="samra-lines">
-                                        <li t-foreach="order.lines" t-as="line" t-key="line_index">
-                                            <img class="samra-lines__img"
-                                                 t-att-src="productImage(line.product_id)"
-                                                 t-att-alt="line.description"/>
-                                            <div class="samra-lines__text">
-                                                <span class="samra-lines__desc" t-esc="line.description"/>
-                                                <span class="samra-lines__spec">
-                                                    <t t-if="line.sku">SKU <t t-esc="line.sku"/> · </t>
-                                                    <t t-esc="line.qty"/> ×
-                                                    <t t-esc="money(line.price)"/>
-                                                    <t t-if="line.gold_weight"> · <t t-esc="line.gold_weight"/> g gold</t>
-                                                    <t t-if="line.stone_details"> · <t t-esc="line.stone_details"/></t>
-                                                </span>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                        </ol>
                     </section>
 
-                    <section class="samra-card">
-                        <div class="samra-card__head">
-                            <h2>Wishlist</h2>
-                            <button class="samra-link" t-on-click="openWishlist">View all</button>
+                    <section class="samra-card" t-if="donutSegments.length">
+                        <div class="samra-card__h">
+                            <h2>Where the Money Goes</h2>
+                            <span class="samra-note">lifetime · by line value</span>
                         </div>
-                        <div t-if="!d.wishlist.length" class="samra-empty">Nothing wishlisted yet.</div>
-                        <div t-else="" class="samra-products">
-                            <div class="samra-product" t-foreach="d.wishlist" t-as="item" t-key="item.id">
-                                <img t-att-src="productImage(item.product_id)" t-att-alt="item.product"/>
-                                <span class="samra-product__name" t-esc="item.product"/>
-                                <span class="samra-product__price" t-esc="money(item.price)"/>
-                                <span class="samra-product__note" t-if="item.note" t-esc="item.note"/>
+                        <div class="samra-donutwrap">
+                            <svg width="168" height="168" viewBox="0 0 42 42" role="img"
+                                 aria-label="Share of spend by product category">
+                                <circle cx="21" cy="21" r="15.9" fill="none"
+                                        stroke="var(--samra-track)" stroke-width="6"/>
+                                <circle t-foreach="donutSegments" t-as="seg" t-key="seg.key"
+                                        cx="21" cy="21" t-att-r="seg.radius" fill="none"
+                                        t-att-stroke="seg.colour" stroke-width="6"
+                                        t-att-stroke-dasharray="seg.dash"
+                                        t-att-stroke-dashoffset="seg.offset"/>
+                                <text x="21" y="20.4" text-anchor="middle" class="samra-donut__big"
+                                      t-esc="compact(donutTotal)"/>
+                                <text x="21" y="24.8" text-anchor="middle" class="samra-donut__sub"
+                                      t-esc="currency + ' LIFETIME'"/>
+                            </svg>
+                            <div class="samra-legend">
+                                <div t-foreach="donutSegments" t-as="seg" t-key="seg.key">
+                                    <i class="samra-dot" t-attf-style="background: {{ seg.colour }}"/>
+                                    <t t-esc="seg.label"/>
+                                    <b class="samra-num" t-esc="plain(seg.revenue)"/>
+                                </div>
                             </div>
                         </div>
                     </section>
 
                     <section class="samra-card">
-                        <div class="samra-card__head">
+                        <div class="samra-card__h">
+                            <h2>Purchase History</h2>
+                            <button class="samra-link" t-on-click="openOrders">View all</button>
+                        </div>
+                        <div t-if="!d.orders.length" class="samra-empty">No confirmed purchases yet.</div>
+                        <ol t-else="" class="samra-tl">
+                            <li t-foreach="d.orders" t-as="order" t-key="order.id">
+                                <span class="samra-tl__dot"/>
+                                <div class="samra-tl__top">
+                                    <button class="samra-tl__ref"
+                                            t-on-click="() => this.openRecord('sale.order', order.id, order.name)"
+                                            t-esc="order.name"/>
+                                    <span class="samra-tl__amt samra-num" t-esc="money(order.amount_total)"/>
+                                </div>
+                                <div class="samra-tl__meta">
+                                    <span t-esc="formatDate(order.date)"/>
+                                    <span t-if="order.branch" t-esc="order.branch"/>
+                                    <span t-if="order.salesperson" t-esc="order.salesperson"/>
+                                    <span t-if="order.invoices.length" t-esc="order.invoices.join(', ')"/>
+                                </div>
+                                <ul class="samra-lines">
+                                    <li t-foreach="order.lines" t-as="line" t-key="line_index">
+                                        <img class="samra-thumb" t-att-src="productImage(line.product_id)"
+                                             t-att-alt="line.description"/>
+                                        <div>
+                                            <span class="samra-lines__d" t-esc="line.description"/>
+                                            <span class="samra-lines__s samra-num">
+                                                <t t-if="line.sku"><t t-esc="line.sku"/> · </t>
+                                                <t t-esc="line.qty"/> × <t t-esc="plain(line.price)"/>
+                                                <t t-if="line.gold_weight"> · <t t-esc="grams(line.gold_weight)"/> g</t>
+                                                <t t-if="line.stone_details"> · <t t-esc="line.stone_details"/></t>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </section>
+
+                    <section class="samra-card">
+                        <div class="samra-card__h">
+                            <h2>Wishlist</h2>
+                            <span class="samra-note" t-if="a.engagement.wishlist_items">
+                                <t t-esc="a.engagement.wishlist_items"/> items ·
+                                <t t-esc="money(a.engagement.wishlist_value)"/> open
+                            </span>
+                        </div>
+                        <div t-if="!d.wishlist.length" class="samra-empty">Nothing wishlisted yet.</div>
+                        <div t-else="" class="samra-pg">
+                            <button t-foreach="d.wishlist" t-as="item" t-key="item.id"
+                                    class="samra-pgi"
+                                    t-on-click="() => this.openRecord('product.product', item.product_id, item.product)">
+                                <img t-att-src="productImage(item.product_id)" t-att-alt="item.product"/>
+                                <span class="samra-pgi__n" t-esc="item.product"/>
+                                <span class="samra-pgi__p samra-num" t-esc="money(item.price)"/>
+                                <span class="samra-pgi__x" t-if="item.note" t-esc="item.note"/>
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="samra-card">
+                        <div class="samra-card__h">
                             <h2>Viewed Products</h2>
                             <button class="samra-link" t-on-click="openViewed">View all</button>
                         </div>
                         <div t-if="!d.viewed.length" class="samra-empty">No viewings recorded.</div>
-                        <div t-else="" class="samra-products">
-                            <div class="samra-product" t-foreach="d.viewed" t-as="item" t-key="item.id">
+                        <div t-else="" class="samra-pg">
+                            <div t-foreach="d.viewed" t-as="item" t-key="item.id" class="samra-pgi">
                                 <img t-att-src="productImage(item.product_id)" t-att-alt="item.product"/>
-                                <span class="samra-product__name" t-esc="item.product"/>
-                                <span class="samra-product__note">
+                                <span class="samra-pgi__n" t-esc="item.product"/>
+                                <span class="samra-pgi__x">
                                     <t t-esc="formatDate(item.viewed_on)"/>
                                     <t t-if="item.branch"> · <t t-esc="item.branch"/></t>
                                 </span>
@@ -301,75 +362,92 @@
                 <div class="samra-col">
 
                     <section class="samra-card">
-                        <div class="samra-card__head"><h2>Preferences</h2></div>
-                        <dl class="samra-prefs">
-                            <div t-if="d.preferences.gold_colour">
-                                <dt>Gold</dt><dd t-esc="d.preferences.gold_colour"/>
-                            </div>
-                            <div t-if="d.preferences.category">
-                                <dt>Category</dt><dd t-esc="d.preferences.category"/>
-                            </div>
-                            <div t-if="d.preferences.collection">
-                                <dt>Collection</dt><dd t-esc="d.preferences.collection"/>
-                            </div>
-                            <div t-if="d.preferences.size">
-                                <dt>Size</dt><dd t-esc="d.preferences.size"/>
-                            </div>
-                            <div t-if="d.preferences.diamond_spec">
-                                <dt>Diamond</dt><dd t-esc="d.preferences.diamond_spec"/>
-                            </div>
-                            <div t-if="d.preferences.gemstone">
-                                <dt>Gemstone</dt><dd t-esc="d.preferences.gemstone"/>
-                            </div>
-                            <div t-if="d.preferences.style">
-                                <dt>Style</dt><dd t-esc="d.preferences.style"/>
-                            </div>
-                            <div t-if="d.preferences.budget">
-                                <dt>Budget</dt><dd t-esc="money(d.preferences.budget)"/>
-                            </div>
-                        </dl>
-                        <div class="samra-empty"
-                             t-if="!d.preferences.gold_colour and !d.preferences.category and !d.preferences.collection and !d.preferences.size and !d.preferences.diamond_spec and !d.preferences.gemstone and !d.preferences.style and !d.preferences.budget">
-                            No preferences captured yet.
+                        <div class="samra-card__h"><h2>Tier Standing</h2></div>
+                        <div class="samra-tierhead">
+                            <span t-if="a.tier_progress.next_tier">
+                                Toward <t t-esc="a.tier_progress.next_tier"/>
+                            </span>
+                            <span t-else="">Top tier attained</span>
+                            <span class="samra-tierhead__v samra-num" t-if="a.tier_progress.next_tier"
+                                  t-esc="money(a.tier_progress.remaining) + ' to go'"/>
+                            <span class="samra-tierhead__v samra-num" t-else=""
+                                  t-esc="'+' + plain(a.lifetime_value - a.tier_progress.threshold)"/>
+                        </div>
+                        <span class="samra-tiertrack">
+                            <span class="samra-tierfill"
+                                  t-attf-style="width: {{ a.tier_progress.progress }}%"/>
+                        </span>
+                        <div class="samra-tierends">
+                            <span>Regular</span><span>VIP</span><span>VVIP</span>
+                        </div>
+                        <div class="samra-alert" t-if="a.cadence.slowing">
+                            Cadence slowing — <t t-esc="a.cadence.recent_days"/> days recently against a
+                            <t t-esc="a.cadence.average_days"/>-day average. Reactivation opens at
+                            <t t-esc="d.at_risk_days"/>.
                         </div>
                     </section>
 
-                    <section class="samra-card" t-if="d.appointments.length">
-                        <div class="samra-card__head"><h2>Upcoming Appointments</h2></div>
-                        <ul class="samra-list">
-                            <li t-foreach="d.appointments" t-as="event" t-key="event.id">
-                                <button class="samra-list__main"
-                                        t-on-click="() => this.openRecord('calendar.event', event.id, event.name)">
-                                    <span t-esc="event.name"/>
-                                    <small>
-                                        <t t-esc="formatDate(event.start)"/>
-                                        <t t-if="event.location"> · <t t-esc="event.location"/></t>
-                                    </small>
-                                </button>
-                            </li>
-                        </ul>
+                    <section class="samra-card" t-if="a.by_collection.length">
+                        <div class="samra-card__h"><h2>By Collection</h2></div>
+                        <div class="samra-bd">
+                            <div class="samra-bd__row" t-foreach="a.by_collection" t-as="row" t-key="row.label">
+                                <span class="samra-bd__lab" t-esc="row.label"/>
+                                <span class="samra-bd__val samra-num" t-esc="plain(row.revenue)"/>
+                                <span class="samra-bd__track">
+                                    <span class="samra-bd__fill" t-attf-style="width: {{ row.share }}%"/>
+                                </span>
+                            </div>
+                        </div>
                     </section>
 
-                    <section class="samra-card" t-if="d.tickets.length">
-                        <div class="samra-card__head"><h2>Open Tickets</h2></div>
-                        <ul class="samra-list">
-                            <li t-foreach="d.tickets" t-as="ticket" t-key="ticket.id">
-                                <button class="samra-list__main"
-                                        t-on-click="() => this.openRecord('helpdesk.ticket', ticket.id, ticket.name)">
-                                    <span t-esc="ticket.name"/>
-                                    <small t-esc="ticket.stage"/>
-                                </button>
-                            </li>
-                        </ul>
+                    <section class="samra-card" t-if="a.by_branch.length">
+                        <div class="samra-card__h"><h2>By Branch</h2></div>
+                        <div class="samra-bd">
+                            <div class="samra-bd__row" t-foreach="a.by_branch" t-as="row" t-key="row.label">
+                                <span class="samra-bd__lab" t-esc="row.label"/>
+                                <span class="samra-bd__val samra-num" t-esc="plain(row.revenue)"/>
+                                <span class="samra-bd__track">
+                                    <span class="samra-bd__fill samra-bd__fill--q"
+                                          t-attf-style="width: {{ row.share }}%"/>
+                                </span>
+                            </div>
+                        </div>
                     </section>
 
                     <section class="samra-card">
-                        <div class="samra-card__head">
-                            <h2>WhatsApp</h2>
-                            <button class="samra-link" t-on-click="openWhatsapp">View all</button>
+                        <div class="samra-card__h"><h2>Preferences</h2></div>
+                        <dl class="samra-prefs">
+                            <div t-if="d.preferences.gold_colour"><dt>Gold</dt><dd t-esc="d.preferences.gold_colour"/></div>
+                            <div t-if="d.preferences.category"><dt>Category</dt><dd t-esc="d.preferences.category"/></div>
+                            <div t-if="d.preferences.collection"><dt>Collection</dt><dd t-esc="d.preferences.collection"/></div>
+                            <div t-if="d.preferences.size"><dt>Size</dt><dd t-esc="d.preferences.size"/></div>
+                            <div t-if="d.preferences.diamond_spec"><dt>Diamond</dt><dd t-esc="d.preferences.diamond_spec"/></div>
+                            <div t-if="d.preferences.gemstone"><dt>Gemstone</dt><dd t-esc="d.preferences.gemstone"/></div>
+                            <div t-if="d.preferences.style"><dt>Style</dt><dd t-esc="d.preferences.style"/></div>
+                            <div t-if="d.preferences.budget"><dt>Budget</dt><dd class="samra-num" t-esc="money(d.preferences.budget)"/></div>
+                        </dl>
+                    </section>
+
+                    <section class="samra-card">
+                        <div class="samra-card__h">
+                            <h2>Engagement</h2>
+                            <button class="samra-link" t-on-click="openWhatsapp">Messages</button>
                         </div>
-                        <div t-if="!d.whatsapp.length" class="samra-empty">No messages logged.</div>
-                        <ul t-else="" class="samra-chat">
+                        <div class="samra-eng">
+                            <div>
+                                <b class="samra-num" t-esc="a.engagement.messages"/>
+                                <span>Messages</span>
+                            </div>
+                            <div>
+                                <b class="samra-num" t-esc="a.engagement.viewed_products"/>
+                                <span>Shown</span>
+                            </div>
+                            <div>
+                                <b class="samra-num" t-esc="a.engagement.wishlist_items"/>
+                                <span>Wishlisted</span>
+                            </div>
+                        </div>
+                        <ul class="samra-chat" t-if="d.whatsapp.length">
                             <li t-foreach="d.whatsapp" t-as="msg" t-key="msg.id"
                                 t-att-class="'samra-chat__msg samra-chat__msg--' + msg.direction">
                                 <p t-esc="msg.content || msg.message_type"/>
@@ -381,19 +459,41 @@
                         </ul>
                     </section>
 
+                    <section class="samra-card" t-if="d.appointments.length or d.tickets.length">
+                        <div class="samra-card__h"><h2>Upcoming</h2></div>
+                        <ul class="samra-rows">
+                            <li t-foreach="d.appointments" t-as="event" t-key="'a' + event.id"
+                                t-on-click="() => this.openRecord('calendar.event', event.id, event.name)">
+                                <span><t t-esc="event.name"/><small t-esc="event.location || 'Appointment'"/></span>
+                                <span class="samra-num" t-esc="formatDate(event.start)"/>
+                            </li>
+                            <li t-foreach="d.tickets" t-as="ticket" t-key="'t' + ticket.id"
+                                t-on-click="() => this.openRecord('helpdesk.ticket', ticket.id, ticket.name)">
+                                <span><t t-esc="ticket.name"/><small>Helpdesk</small></span>
+                                <span t-esc="ticket.stage"/>
+                            </li>
+                        </ul>
+                    </section>
+
                     <section class="samra-card" t-if="d.loyalty.rewards.length">
-                        <div class="samra-card__head"><h2>Rewards</h2></div>
-                        <ul class="samra-rewards">
-                            <li t-foreach="d.loyalty.rewards" t-as="reward" t-key="reward.id"
-                                t-att-class="reward.affordable ? 'is-affordable' : ''">
-                                <span t-esc="reward.description"/>
-                                <small><t t-esc="reward.required_points"/> pts</small>
+                        <div class="samra-card__h">
+                            <h2>Rewards</h2>
+                            <span class="samra-note"><t t-esc="points(d.loyalty.points)"/> pts</span>
+                        </div>
+                        <ul class="samra-rows">
+                            <li t-foreach="d.loyalty.rewards" t-as="reward" t-key="reward.id">
+                                <span>
+                                    <t t-esc="reward.description"/>
+                                    <small><t t-esc="reward.required_points"/> pts</small>
+                                </span>
+                                <span t-if="reward.affordable" class="samra-ok">Available</span>
+                                <span t-else="" class="samra-faint">Locked</span>
                             </li>
                         </ul>
                     </section>
 
                     <section class="samra-card" t-if="d.notes">
-                        <div class="samra-card__head"><h2>Notes</h2></div>
+                        <div class="samra-card__h"><h2>Notes</h2></div>
                         <div class="samra-notes" t-out="d.notes"/>
                     </section>
                 </div>

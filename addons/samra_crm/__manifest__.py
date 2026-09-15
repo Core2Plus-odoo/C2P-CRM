@@ -45,6 +45,7 @@ field types match exactly.
         'views/res_partner_views.xml',
         'views/samra_crm_menus.xml',
         'views/samra_transfer_views.xml',
+        'views/samra_demo_data_views.xml',
         'views/samra_dashboard_views.xml',
     ],
     'assets': {

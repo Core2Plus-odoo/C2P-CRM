@@ -1,34 +1,108 @@
 // Samra design tokens.
 //
-// Dubai fine jewellery: ivory ground, charcoal text, a single restrained gold
-// accent used for emphasis only. Gold is a highlight, not a background -- a
-// gold-washed screen reads as costume, not fine jewellery.
+// Dubai fine jewellery: a warm paper ground, charcoal text, and a single
+// restrained gold accent used for emphasis only. Gold is a highlight, never a
+// background -- a gold-washed screen reads as costume, not fine jewellery.
+//
+// Light is the default because it sits inside Odoo's light backend. The dark
+// set follows the viewer's OS preference. Every colour is declared here first,
+// so nothing is defined only inside the media query.
+//
+// NOTE: no @import anywhere in this module's SCSS. Odoo concatenates a
+// bundle's stylesheets into one string and compiles that, so there is no
+// current directory for a relative import to resolve against. This file is
+// listed first in the manifest instead, which is what makes these tokens and
+// the mixins below available to everything after it.
 
 :root {
-    --samra-ink:        #1a1614;
-    --samra-ink-soft:   #6b615a;
-    --samra-ink-faint:  #9a8f87;
+    --samra-ink:        #1b1613;
+    --samra-ink-soft:   #6c6259;
+    --samra-ink-faint:  #968c83;
 
-    --samra-gold:       #a8842c;
-    --samra-gold-lift:  #c9a548;
-    --samra-gold-wash:  #f5efe1;
+    --samra-gold:       #9a7b1f;
+    --samra-gold-lift:  #c9a227;
+    --samra-gold-wash:  rgba(201, 162, 39, 0.14);
 
-    --samra-ground:     #f7f4ef;
+    --samra-ground:     #f4f1ec;
     --samra-surface:    #ffffff;
-    --samra-line:       rgba(26, 22, 20, 0.10);
-    --samra-line-firm:  rgba(26, 22, 20, 0.18);
+    --samra-surface-2:  #faf8f5;
+    --samra-line:       rgba(27, 22, 19, 0.11);
+    --samra-line-firm:  rgba(27, 22, 19, 0.20);
 
-    --samra-danger:     #a4382f;
-    --samra-danger-wash:#fbeeec;
-    --samra-good:       #2f6b4f;
-    --samra-good-wash:  #eaf3ee;
+    --samra-danger:      #a4382f;
+    --samra-danger-wash: rgba(164, 56, 47, 0.10);
+    --samra-good:        #2f6b4f;
+    --samra-good-wash:   rgba(47, 107, 79, 0.12);
+
+    // Chart surfaces, kept separate from text colours so a retheme moves both.
+    --samra-track:      rgba(27, 22, 19, 0.07);
+    --samra-grid:       rgba(27, 22, 19, 0.07);
+    --samra-grid-firm:  rgba(27, 22, 19, 0.20);
+    --samra-bar-a:      #c9a227;
+    --samra-bar-b:      #9a7b1f;
+    --samra-chart-line: #4a6f8f;
+    --samra-seg-1:      #c9a227;
+    --samra-seg-2:      #9a7b1f;
+    --samra-seg-3:      #7d6531;
+    --samra-seg-4:      #5d6f84;
+    --samra-seg-5:      #6b756f;
+
+    // Text that sits on a gold fill.
+    --samra-on-gold:    #2a1f07;
+
+    --samra-hero-wash:  rgba(201, 162, 39, 0.13);
+    --samra-hero-top:   #efe9df;
+    --samra-well-a:     #f7f2e6;
+    --samra-well-b:     #efe6d2;
 
     --samra-radius:     4px;
-    --samra-gap:        16px;
+    --samra-gap:        18px;
 
-    // A quiet serif for display text; the stack degrades to whatever the
+    // A quiet serif for display text. The stack degrades to whatever the
     // device has rather than pulling a webfont into the backend bundle.
-    --samra-display: "Georgia", "Times New Roman", serif;
+    --samra-display: "Cormorant Garamond", "Georgia", "Times New Roman", serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --samra-ink:        #f2ece2;
+        --samra-ink-soft:   #a2988a;
+        --samra-ink-faint:  #6f665c;
+
+        --samra-gold:       #c9a227;
+        --samra-gold-lift:  #e6cd7c;
+        --samra-gold-wash:  rgba(201, 162, 39, 0.16);
+
+        --samra-ground:     #0d0b0a;
+        --samra-surface:    #161311;
+        --samra-surface-2:  #1e1a17;
+        --samra-line:       rgba(226, 214, 196, 0.10);
+        --samra-line-firm:  rgba(226, 214, 196, 0.18);
+
+        --samra-danger:      #b4443a;
+        --samra-danger-wash: rgba(180, 68, 58, 0.12);
+        --samra-good:        #3f8f6a;
+        --samra-good-wash:   rgba(63, 143, 106, 0.16);
+
+        --samra-track:      rgba(255, 255, 255, 0.05);
+        --samra-grid:       rgba(226, 214, 196, 0.06);
+        --samra-grid-firm:  rgba(226, 214, 196, 0.18);
+        --samra-bar-a:      #e6cd7c;
+        --samra-bar-b:      #9c7c1d;
+        --samra-chart-line: #7ba6c9;
+        --samra-seg-1:      #e6cd7c;
+        --samra-seg-2:      #c9a227;
+        --samra-seg-3:      #8a6f2e;
+        --samra-seg-4:      #5d6f84;
+        --samra-seg-5:      #45514f;
+
+        --samra-on-gold:    #20180a;
+
+        --samra-hero-wash:  rgba(201, 162, 39, 0.16);
+        --samra-hero-top:   #191512;
+        --samra-well-a:     #2a2320;
+        --samra-well-b:     #171310;
+    }
 }
 
 @mixin samra-card-surface {
@@ -38,9 +112,13 @@
 }
 
 @mixin samra-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.09em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--samra-ink-faint);
+}
+
+@mixin samra-well {
+    background: linear-gradient(145deg, var(--samra-well-a), var(--samra-well-b));
 }
