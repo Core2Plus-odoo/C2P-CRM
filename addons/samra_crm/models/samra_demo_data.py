@@ -18,6 +18,8 @@ from datetime import datetime, timedelta
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+from .samra_metrics import CONFIRMED_STATES
+
 _logger = logging.getLogger(__name__)
 
 # Marks generated orders so a re-run can find and remove them.
@@ -249,6 +251,17 @@ class SamraDemoData(models.TransientModel):
         if not salespeople:
             raise UserError(_("No internal users found to assign orders to."))
 
+        # Orders this wizard did not create are counted by every dashboard
+        # figure but are invisible to the cleanup below, which is scoped to the
+        # DEMO- prefix. Reporting the number is the difference between a total
+        # that reconciles and one that quietly includes somebody's test run.
+        foreign = self.env['sale.order'].search_count([
+            ('state', 'in', list(CONFIRMED_STATES)),
+            '|',
+            ('client_order_ref', '=', False),
+            ('client_order_ref', 'not like', f'{DEMO_REF_PREFIX}%'),
+        ])
+
         removed = 0
         if self.clear_previous:
             previous = self.env['sale.order'].search(self._demo_order_domain())
@@ -285,10 +298,12 @@ class SamraDemoData(models.TransientModel):
             "%(enriched)s products given specifications.\n"
             "%(wishlist)s wishlist items, %(viewed)s viewings, %(messages)s messages.\n"
             "%(removed)s previously generated orders removed.\n"
+            "%(foreign)s confirmed orders were not created here and were left "
+            "alone -- dashboard totals include them.\n"
             "Customer metrics recomputed.",
             orders=len(orders), months=self.months, enriched=enriched,
             wishlist=engagement['wishlist'], viewed=engagement['viewed'],
-            messages=engagement['messages'], removed=removed,
+            messages=engagement['messages'], removed=removed, foreign=foreign,
         )
         return {
             'type': 'ir.actions.client',

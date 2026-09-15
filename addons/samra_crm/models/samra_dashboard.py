@@ -14,14 +14,12 @@ from datetime import timedelta
 
 from odoo import api, fields, models
 
+from .samra_metrics import CONFIRMED_STATES
+
 INACTIVE_DAYS = 90
 
 VIP_TIER_ORDER = ['regular', 'vip', 'vvip']
 VIP_TIER_LABELS = {'regular': 'Regular', 'vip': 'VIP', 'vvip': 'VVIP'}
-
-# Orders in these states are real business; drafts and cancellations are not.
-CONFIRMED_STATES = ('sale', 'done')
-
 
 class SamraDashboard(models.AbstractModel):
     _name = 'samra.dashboard'
@@ -206,7 +204,6 @@ class SamraDashboard(models.AbstractModel):
             'points_redeemed': redeemed,
             'domain': [],
         }
-
 
     @api.model
     def _top_clients(self, domain, limit=8):
