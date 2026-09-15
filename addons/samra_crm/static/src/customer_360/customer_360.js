@@ -131,6 +131,22 @@ export class SamraCustomer360 extends Component {
         return Number(value || 0).toLocaleString("en-AE", { maximumFractionDigits: 1 });
     }
 
+    /** "Birthday — today" / "Anniversary — in 9 days".
+     *  One string rather than three facts: the occasion, when it is and how
+     *  soon are one thought, and the header strip has no room for three. */
+    occasionSummary(occasion) {
+        const labels = { birthday: "Birthday", anniversary: "Anniversary" };
+        const label = labels[occasion.type] || "Occasion";
+        const days = Number(occasion.days_away || 0);
+        if (days <= 0) {
+            return `${label} — today`;
+        }
+        if (days === 1) {
+            return `${label} — tomorrow`;
+        }
+        return `${label} — in ${days} days`;
+    }
+
     formatDate(value) {
         if (!value) {
             return "—";

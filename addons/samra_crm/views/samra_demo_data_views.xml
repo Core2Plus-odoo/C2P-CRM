@@ -19,6 +19,7 @@
                     <group>
                         <field name="enrich_products"/>
                         <field name="with_engagement"/>
+                        <field name="with_occasions"/>
                         <field name="clear_previous"/>
                     </group>
                 </group>

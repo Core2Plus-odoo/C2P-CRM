@@ -10,3 +10,4 @@ from . import samra_wishlist
 from . import samra_viewed_product
 from . import samra_whatsapp_log
 from . import samra_dashboard
+from . import samra_occasions

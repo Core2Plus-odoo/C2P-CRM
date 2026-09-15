@@ -195,6 +195,32 @@ export class SamraDashboard extends Component {
         return parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
     }
 
+    /** "Today" / "Tomorrow" / "in 9 days" -- a countdown, not a date.
+     *  Somebody scanning this panel is deciding what to do this morning, and
+     *  a date makes them do the subtraction themselves. */
+    occasionWhen(row) {
+        const days = Number(row.days_away || 0);
+        if (days <= 0) {
+            return "Today";
+        }
+        if (days === 1) {
+            return "Tomorrow";
+        }
+        return `in ${days} days`;
+    }
+
+    /** Urgency class for the countdown chip. */
+    occasionUrgency(row) {
+        const days = Number(row.days_away || 0);
+        if (days <= 1) {
+            return "samra-chip samra-chip--due";
+        }
+        if (days <= 7) {
+            return "samra-chip samra-chip--soon";
+        }
+        return "samra-chip";
+    }
+
     /** Bar width relative to the largest value in the same series. */
     share(value, rows, key = "revenue") {
         const peak = Math.max(...rows.map((row) => Number(row[key] || 0)), 0);

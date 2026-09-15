@@ -316,6 +316,15 @@ class ResPartner(models.Model):
             'anniversary': fields.Date.to_string(self.x_anniversary) if self.x_anniversary else None,
             'birthday': fields.Date.to_string(self.x_birthday) if self.x_birthday else None,
             'nationality': self.x_nationality_id.name or '',
+            # The countdown, not just the stored dates above. An associate
+            # opening a profile mid-conversation should not have to work out
+            # that the anniversary on file is nine days away.
+            'next_occasion': {
+                'type': self.x_next_occasion_type or None,
+                'date': fields.Date.to_string(self.x_next_occasion_date)
+                        if self.x_next_occasion_date else None,
+                'days_away': self.x_days_to_occasion if self.x_next_occasion_date else None,
+            },
             'notes': self.comment or '',
             'consent': {
                 'whatsapp': self.x_whatsapp_consent,

@@ -69,6 +69,13 @@ class SamraDemoData(models.TransientModel):
     )
     with_engagement = fields.Boolean(
         string='Wishlist, Viewings and Messages', default=True)
+    with_occasions = fields.Boolean(
+        string='Birthdays and Anniversaries', default=True,
+        help='Fills in dates of birth and wedding anniversaries on customers '
+             'that have none, weighted so that a workable number of them fall '
+             'in the coming weeks. Without these the Upcoming Occasions list '
+             'is empty however many orders exist.',
+    )
     clear_previous = fields.Boolean(
         string='Remove Previously Generated Orders', default=True,
         help='Deletes orders from an earlier run so history does not double up. '
@@ -121,7 +128,7 @@ class SamraDemoData(models.TransientModel):
         VIP breakdowns meaningless.
         """
         customers = self.env['res.partner'].search(
-            [('customer_rank', '>', 0)], order='id')
+            self.env['res.partner']._samra_customer_domain(), order='id')
         if not customers:
             raise UserError(_("No customers found. Create some contacts first."))
 
@@ -227,6 +234,55 @@ class SamraDemoData(models.TransientModel):
 
         return counts
 
+    @staticmethod
+    def _shift_years(when, years):
+        """Move a date back N years, surviving 29 February."""
+        try:
+            return when.replace(year=when.year - years)
+        except ValueError:
+            return when.replace(year=when.year - years, day=28)
+
+    def _generate_occasions(self, rng, customers):
+        """Give customers birthdays and anniversaries worth acting on.
+
+        Dates scattered uniformly across the year would leave roughly one
+        customer in twelve with an occasion this month, which is honest but
+        useless for looking at the feature. So a deliberate share of them are
+        placed in the next six weeks: enough to fill the worklist without
+        making every customer an occasion, which would be its own kind of lie.
+
+        Only writes where the field is empty. A date somebody entered by hand
+        is real data and the demo generator has no business overwriting it.
+        """
+        today = fields.Date.context_today(self)
+        filled = {'birthday': 0, 'anniversary': 0}
+
+        for partner in customers:
+            if not partner.x_birthday:
+                if rng.random() < 0.35:
+                    # Soon: inside the window the list is organised around.
+                    when = today + timedelta(days=rng.randint(0, 45))
+                else:
+                    when = today + timedelta(days=rng.randint(46, 364))
+                # Push it back a plausible lifetime so the stored value reads
+                # as a date of birth rather than a date in the future.
+                born = self._shift_years(when, rng.randint(24, 62))
+                partner.x_birthday = born
+                filled['birthday'] += 1
+
+            # Not everyone is married, and a database where they all are makes
+            # the anniversary column meaningless.
+            if not partner.x_anniversary and rng.random() < 0.6:
+                if rng.random() < 0.3:
+                    when = today + timedelta(days=rng.randint(0, 45))
+                else:
+                    when = today + timedelta(days=rng.randint(46, 364))
+                married = self._shift_years(when, rng.randint(1, 30))
+                partner.x_anniversary = married
+                filled['anniversary'] += 1
+
+        return filled
+
     # ------------------------------------------------------------------
 
     def action_generate(self):
@@ -280,6 +336,10 @@ class SamraDemoData(models.TransientModel):
         if self.with_engagement:
             engagement = self._generate_engagement(rng, customers, products, warehouses)
 
+        occasions = {'birthday': 0, 'anniversary': 0}
+        if self.with_occasions:
+            occasions = self._generate_occasions(rng, customers)
+
         # The profile reads live, but list views, search and the dashboard read
         # the stored fields -- so refresh them rather than leaving the two
         # disagreeing until the nightly run.
@@ -297,6 +357,7 @@ class SamraDemoData(models.TransientModel):
             "%(orders)s orders created across %(months)s months.\n"
             "%(enriched)s products given specifications.\n"
             "%(wishlist)s wishlist items, %(viewed)s viewings, %(messages)s messages.\n"
+            "%(birthdays)s birthdays and %(anniversaries)s anniversaries filled in.\n"
             "%(removed)s previously generated orders removed.\n"
             "%(foreign)s confirmed orders were not created here and were left "
             "alone -- dashboard totals include them.\n"
@@ -304,6 +365,7 @@ class SamraDemoData(models.TransientModel):
             orders=len(orders), months=self.months, enriched=enriched,
             wishlist=engagement['wishlist'], viewed=engagement['viewed'],
             messages=engagement['messages'], removed=removed, foreign=foreign,
+            birthdays=occasions['birthday'], anniversaries=occasions['anniversary'],
         )
         return {
             'type': 'ir.actions.client',

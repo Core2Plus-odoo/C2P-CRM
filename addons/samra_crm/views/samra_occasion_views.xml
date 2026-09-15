@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Requirement 17: upcoming birthdays and anniversaries, as a worklist.
+
+         This is a view over res.partner rather than a new model, because an
+         occasion is not a record. It is a projection of a date already on the
+         customer, so giving it its own table would mean keeping two things in
+         step for no gain, and would put the customer's brief one click
+         further away than the person making the call needs it. -->
+
+    <record id="view_samra_occasion_list" model="ir.ui.view">
+        <field name="name">res.partner.samra.occasions.list</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list string="Upcoming Occasions" default_order="x_next_occasion_date asc"
+                  create="false" sample="1">
+                <field name="x_next_occasion_date" string="Date"/>
+                <field name="x_days_to_occasion" string="In (days)"
+                       decoration-danger="x_days_to_occasion &lt;= 3"
+                       decoration-warning="x_days_to_occasion &gt; 3 and x_days_to_occasion &lt;= 7"/>
+                <field name="x_next_occasion_type" string="Occasion" widget="badge"/>
+                <field name="display_name" string="Customer"/>
+                <field name="x_vip_tier" string="Tier" widget="badge"
+                       decoration-warning="x_vip_tier == 'vip'"
+                       decoration-success="x_vip_tier == 'vvip'"/>
+                <field name="x_lifetime_value" string="Lifetime Value" sum="Total"/>
+                <field name="x_purchase_frequency" string="Orders" optional="show"/>
+                <field name="x_last_purchase_date" string="Last Purchase" optional="show"/>
+                <field name="x_wishlist_count" string="Wishlist" optional="show"/>
+                <field name="x_wishlist_value" string="Wishlist Value" optional="hide"/>
+                <field name="x_collection_pref" string="Prefers" optional="hide"/>
+                <field name="user_id" string="Salesperson" optional="show"/>
+                <field name="phone" optional="show"/>
+                <field name="x_whatsapp_consent" string="WhatsApp OK" optional="show"/>
+                <!-- Kept out of the visible set but present so the badge
+                     decorations above can read it. -->
+                <field name="x_birthday_next" column_invisible="1"/>
+                <field name="x_anniversary_next" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_samra_occasion_kanban" model="ir.ui.view">
+        <field name="name">res.partner.samra.occasions.kanban</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <kanban class="o_samra_occasion_kanban" create="false" sample="1"
+                    default_order="x_next_occasion_date asc">
+                <field name="x_next_occasion_type"/>
+                <field name="x_days_to_occasion"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex align-items-start gap-2">
+                            <field name="avatar_128" widget="image"
+                                   class="o_image_40_cover rounded-circle"/>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-bold text-truncate">
+                                    <field name="display_name"/>
+                                </div>
+                                <div class="text-muted small">
+                                    <field name="x_next_occasion_type"/>
+                                    <span class="mx-1">·</span>
+                                    <field name="x_next_occasion_date"/>
+                                </div>
+                                <div class="mt-1">
+                                    <span class="badge text-bg-secondary"
+                                          t-if="record.x_days_to_occasion.raw_value === 0">Today</span>
+                                    <span class="badge text-bg-secondary" t-else="">
+                                        in <field name="x_days_to_occasion"/> days
+                                    </span>
+                                    <field name="x_vip_tier" widget="badge"/>
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <field name="x_lifetime_value"/> lifetime
+                                    <span class="mx-1">·</span>
+                                    <field name="x_wishlist_count"/> wishlisted
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_samra_occasion_search" model="ir.ui.view">
+        <field name="name">res.partner.samra.occasions.search</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <search string="Upcoming Occasions">
+                <field name="display_name" string="Customer"/>
+                <field name="user_id" string="Salesperson"/>
+                <field name="phone"/>
+
+                <!-- Horizons a shop actually plans against: the call today,
+                     the week's diary, the month's campaign. -->
+                <filter name="occasion_today" string="Today"
+                        domain="[('x_days_to_occasion', '=', 0)]"/>
+                <filter name="occasion_week" string="Next 7 Days"
+                        domain="[('x_days_to_occasion', '&gt;=', 0), ('x_days_to_occasion', '&lt;=', 7)]"/>
+                <filter name="occasion_month" string="Next 30 Days"
+                        domain="[('x_days_to_occasion', '&gt;=', 0), ('x_days_to_occasion', '&lt;=', 30)]"/>
+                <filter name="occasion_quarter" string="Next 90 Days"
+                        domain="[('x_days_to_occasion', '&gt;=', 0), ('x_days_to_occasion', '&lt;=', 90)]"/>
+                <separator/>
+                <filter name="is_birthday" string="Birthdays"
+                        domain="[('x_next_occasion_type', '=', 'birthday')]"/>
+                <filter name="is_anniversary" string="Anniversaries"
+                        domain="[('x_next_occasion_type', '=', 'anniversary')]"/>
+                <separator/>
+                <filter name="tier_vip" string="VIP and above"
+                        domain="[('x_vip_tier', 'in', ['vip', 'vvip'])]"/>
+                <filter name="whatsapp_ok" string="WhatsApp Consented"
+                        domain="[('x_whatsapp_consent', '=', True)]"/>
+                <filter name="mine" string="My Customers"
+                        domain="[('user_id', '=', uid)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_occasion" string="Occasion"
+                            context="{'group_by': 'x_next_occasion_type'}"/>
+                    <filter name="group_month" string="Month"
+                            context="{'group_by': 'x_next_occasion_date:month'}"/>
+                    <filter name="group_tier" string="VIP Tier"
+                            context="{'group_by': 'x_vip_tier'}"/>
+                    <filter name="group_salesperson" string="Salesperson"
+                            context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_samra_occasions" model="ir.actions.act_window">
+        <field name="name">Upcoming Occasions</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_samra_occasion_search"/>
+        <field name="domain">[('x_next_occasion_date', '!=', False)]</field>
+        <field name="context">{'search_default_occasion_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No occasions in the next 30 days</p>
+            <p>Birthdays and anniversaries appear here once they are recorded on
+               a customer. The list refreshes nightly.</p>
+        </field>
+    </record>
+
+    <!-- Bind the occasion views to the action explicitly. Without this the
+         action would fall back to the standard contact list, which carries
+         none of the occasion columns. -->
+    <record id="action_samra_occasions_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="10"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_samra_occasion_list"/>
+        <field name="act_window_id" ref="action_samra_occasions"/>
+    </record>
+
+    <record id="action_samra_occasions_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="20"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_samra_occasion_kanban"/>
+        <field name="act_window_id" ref="action_samra_occasions"/>
+    </record>
+
+    <menuitem id="menu_samra_occasions" name="Upcoming Occasions"
+              parent="menu_samra_crm_root" action="action_samra_occasions"
+              sequence="5"/>
+
+</odoo>
