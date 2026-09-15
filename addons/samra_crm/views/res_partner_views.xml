@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form_samra_inherit" model="ir.ui.view">
+        <field name="name">res.partner.form.samra.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <notebook position="inside">
+                    <page string="Clienteling" name="samra_clienteling">
+                        <group>
+                            <group string="VIP &amp; Dates">
+                                <field name="x_vip_tier" widget="badge"
+                                       decoration-info="x_vip_tier == 'vip'"
+                                       decoration-success="x_vip_tier == 'vvip'"/>
+                                <field name="x_anniversary"/>
+                            </group>
+                            <group string="Preferences">
+                                <field name="x_gold_colour_pref"/>
+                                <field name="x_jewellery_category_pref"/>
+                                <field name="x_collection_pref"/>
+                                <field name="x_size_pref"/>
+                                <field name="x_diamond_spec_pref"/>
+                                <field name="x_budget_pref"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Marketing Consent">
+                                <field name="x_whatsapp_consent"/>
+                                <field name="x_sms_consent"/>
+                            </group>
+                            <group string="Purchase Analytics">
+                                <field name="x_lifetime_value"/>
+                                <field name="x_purchase_frequency"/>
+                                <field name="x_last_purchase_date"/>
+                            </group>
+                        </group>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_partner_list_samra_inherit" model="ir.ui.view">
+        <field name="name">res.partner.list.samra.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="x_vip_tier" optional="show"/>
+                <field name="x_lifetime_value" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
