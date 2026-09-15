@@ -9,6 +9,7 @@ numbers and the drill-down can never disagree, because they come from the same
 domain.
 """
 
+from collections import defaultdict
 from datetime import timedelta
 
 from odoo import api, fields, models
