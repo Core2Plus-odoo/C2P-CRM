@@ -12,6 +12,17 @@
     <record id="view_samra_occasion_list" model="ir.ui.view">
         <field name="name">res.partner.samra.occasions.list</field>
         <field name="model">res.partner</field>
+        <!-- ir.ui.view._order is "priority,name,id" and default_view() takes
+             the primary view with the lowest priority. At the default priority
+             of 16 the tiebreak is the NAME, alphabetically, and
+             "res.partner.samra.occasions.*" sorts ahead of both
+             "res.partner.tree" and "res.partner.select". Left at 16 these
+             silently become THE default list and search views for res.partner
+             across the whole database: every Contacts list, every partner
+             search, every Search More on a partner field. A high priority
+             keeps them where they belong, reachable only through the action
+             that names them explicitly. -->
+        <field name="priority">99</field>
         <field name="arch" type="xml">
             <list string="Upcoming Occasions" default_order="x_next_occasion_date asc"
                   create="false" sample="1">
@@ -44,6 +55,7 @@
     <record id="view_samra_occasion_kanban" model="ir.ui.view">
         <field name="name">res.partner.samra.occasions.kanban</field>
         <field name="model">res.partner</field>
+        <field name="priority">99</field>
         <field name="arch" type="xml">
             <kanban class="o_samra_occasion_kanban" create="false" sample="1"
                     default_order="x_next_occasion_date asc">
@@ -87,6 +99,7 @@
     <record id="view_samra_occasion_search" model="ir.ui.view">
         <field name="name">res.partner.samra.occasions.search</field>
         <field name="model">res.partner</field>
+        <field name="priority">99</field>
         <field name="arch" type="xml">
             <search string="Upcoming Occasions">
                 <field name="display_name" string="Customer"/>
@@ -116,7 +129,7 @@
                 <filter name="mine" string="My Customers"
                         domain="[('user_id', '=', uid)]"/>
 
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="group_occasion" string="Occasion"
                             context="{'group_by': 'x_next_occasion_type'}"/>
                     <filter name="group_month" string="Month"

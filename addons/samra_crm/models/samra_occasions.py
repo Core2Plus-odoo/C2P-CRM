@@ -78,10 +78,17 @@ class ResPartnerOccasions(models.Model):
 
     # Counted rather than stored: the wishlist is small per customer and a
     # stored count would need invalidating from three other models.
+    #
+    # compute_sudo because this is a column in a partner list. An AccessError
+    # raised while rendering a list is a broken screen, not a permission
+    # prompt, and the figure leaks nothing a viewer of the customer is not
+    # already entitled to -- how many pieces they have wishlisted, not which.
     x_wishlist_count = fields.Integer(
-        string='Wishlist', compute='_compute_samra_wishlist_count')
+        string='Wishlist', compute='_compute_samra_wishlist_count',
+        compute_sudo=True)
     x_wishlist_value = fields.Float(
-        string='Wishlist Value', compute='_compute_samra_wishlist_count')
+        string='Wishlist Value', compute='_compute_samra_wishlist_count',
+        compute_sudo=True)
 
     def _compute_samra_wishlist_count(self):
         counts = dict(self.env['x_samra_wishlist']._read_group(
