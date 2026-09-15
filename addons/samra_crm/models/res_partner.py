@@ -350,5 +350,6 @@ class ResPartner(models.Model):
             'tickets': self._samra_tickets(),
             'currency': self.env.company.currency_id.name or 'AED',
             'at_risk_days': AT_RISK_DAYS,
+            'analytics': self._samra_analytics(),
             'capture_branch': self._samra_default_branch().display_name or '',
         }

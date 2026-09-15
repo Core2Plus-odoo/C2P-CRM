@@ -1,5 +1,6 @@
 from . import res_partner
 from . import samra_metrics
+from . import samra_analytics
 from . import samra_consent
 from . import samra_transfer
 from . import product_template
