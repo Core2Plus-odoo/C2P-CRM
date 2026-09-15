@@ -105,4 +105,43 @@ export class SamraClientDialog extends Component {
     get wishlist() {
         return (this.state.data?.wishlist || []).slice(0, 6);
     }
+
+    /**
+     * Recommendations, four of them, each marked with whether this till can
+     * actually sell it.
+     *
+     * The POS only loads products its configuration makes available, and the
+     * engine recommends from the whole catalogue -- it has no idea which
+     * branch the associate is standing in. A suggestion for a piece that
+     * cannot be rung up is still worth showing, because the associate can go
+     * and fetch it or order it in, but it must not look tappable.
+     */
+    get recommendations() {
+        const rows = this.state.data?.recommendations?.products || [];
+        return rows.slice(0, 4).map((rec) => ({
+            ...rec,
+            product: this.pos.models["product.product"].get(rec.id),
+        }));
+    }
+
+    /**
+     * Tap a suggestion, it joins the sale.
+     *
+     * At the till the useful gesture is not "tell me more", it is "add it".
+     * The associate is standing with the customer and the piece in front of
+     * them; the alternative is searching the catalogue for something the
+     * screen already named.
+     */
+    async addRecommendation(rec) {
+        if (!rec.product) {
+            return;
+        }
+        await this.pos.addLineToCurrentOrder(
+            { product_id: rec.product, product_tmpl_id: rec.product.product_tmpl_id },
+            {}
+        );
+        // Close so the line is visible. Staying open would hide the very
+        // thing the tap just did.
+        this.props.close();
+    }
 }

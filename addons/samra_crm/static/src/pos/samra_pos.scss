@@ -121,6 +121,94 @@
         b { font-size: 14px; font-weight: 600; }
     }
 
+    // ---------- recommendations ----------
+    // Rows with a tap target, not a tile grid: on a till the whole row is the
+    // button, and a reason needs a line of text rather than a caption.
+    .samra-pos__recs {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        > li + li { margin-top: 6px; }
+    }
+
+    .samra-pos__rec {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 8px;
+        text-align: left;
+        border: 1px solid var(--samra-line);
+        border-radius: var(--samra-radius);
+        background: transparent;
+        cursor: pointer;
+
+        img {
+            width: 46px;
+            height: 46px;
+            flex: 0 0 auto;
+            object-fit: cover;
+            border-radius: 3px;
+            border: 1px solid var(--samra-line);
+        }
+
+        &:hover:enabled { border-color: var(--samra-gold); }
+
+        // Recommended but not sellable here. Still readable, plainly inert.
+        &:disabled { cursor: default; opacity: 0.68; }
+    }
+
+    .samra-pos__recb {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .samra-pos__recn {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.25;
+    }
+
+    // The reason is why the row is there, so it gets the gold.
+    .samra-pos__recr {
+        align-self: flex-start;
+        padding: 1px 6px;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 2px;
+        color: var(--samra-gold-text);
+        background: var(--samra-gold-wash);
+    }
+
+    .samra-pos__recp {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+        flex: 0 0 auto;
+
+        b { font-size: 13px; font-weight: 600; }
+
+        small {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--samra-gold-text);
+        }
+    }
+
+    .samra-pos__recx {
+        color: var(--samra-ink-faint) !important;
+        letter-spacing: 0.02em !important;
+        text-transform: none !important;
+        font-weight: 500 !important;
+    }
+
     .samra-pos__pg {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
