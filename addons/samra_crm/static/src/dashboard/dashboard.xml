@@ -274,7 +274,7 @@
                             </span>
                         </div>
                         <button class="samra-panel__more"
-                                t-on-click="() => this.drillCustomers(d.occasions.domain, 'Upcoming Occasions')">
+                                t-on-click="() => this.drillOccasions(d.occasions.domain)">
                             Open list
                         </button>
                     </div>

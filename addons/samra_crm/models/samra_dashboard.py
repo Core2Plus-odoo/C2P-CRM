@@ -15,8 +15,12 @@ from datetime import timedelta
 from odoo import api, fields, models
 
 from .samra_metrics import CONFIRMED_STATES
+from .samra_occasions import OCCASION_LABELS
 
 INACTIVE_DAYS = 90
+
+# Chronological, because this split is a sequence rather than a ranking.
+OCCASION_WINDOWS = ['This week', 'This month', 'Later']
 
 VIP_TIER_ORDER = ['regular', 'vip', 'vvip']
 VIP_TIER_LABELS = {'regular': 'Regular', 'vip': 'VIP', 'vvip': 'VVIP'}
@@ -362,11 +366,102 @@ class SamraDashboard(models.AbstractModel):
         }
 
     @api.model
-    def _split_rows(self, totals):
-        """Rank a {label: amount} map and give each row its share of the peak."""
-        rows = sorted(
-            ({'label': label, 'revenue': amount} for label, amount in totals.items()),
-            key=lambda row: row['revenue'], reverse=True)
+    def _breakdown_occasions(self, domain, limit):
+        """Requirement 17 on the dashboard's own terms.
+
+        Ordered by how soon, not by how valuable. The point of this screen is
+        that there is a window: a VVIP whose birthday was last week is no
+        longer actionable, and a Regular whose anniversary is Thursday is.
+        Value still rides along so the list can be triaged once it is open.
+
+        Splits are by lifetime value rather than by headcount, to answer the
+        question an owner actually asks of it -- how much of my book has an
+        occasion this month, and who is holding it.
+        """
+        Partner = self.env['res.partner']
+        partners = Partner.search(domain, order='x_next_occasion_date asc', limit=limit)
+        today = fields.Date.today()
+
+        by_kind = defaultdict(float)
+        by_window = defaultdict(float)
+        by_tier = defaultdict(float)
+        for partner in partners:
+            value = partner.x_lifetime_value or 0.0
+            by_kind[OCCASION_LABELS.get(partner.x_next_occasion_type, 'Occasion')] += value
+            by_window[self._occasion_window(partner.x_days_to_occasion)] += value
+            by_tier[VIP_TIER_LABELS.get(partner.x_vip_tier or 'regular', 'Regular')] += value
+
+        total = sum(partners.mapped('x_lifetime_value'))
+        imminent = len(partners.filtered(lambda p: (p.x_days_to_occasion or 0) <= 7))
+
+        return {
+            'columns': ['When', 'Occasion', 'Customer', 'Tier', 'Salesperson',
+                        'Wishlist', 'Lifetime Value'],
+            'rows': [{
+                'id': partner.id,
+                'model': 'res.partner',
+                'cells': [
+                    self._occasion_when(partner.x_days_to_occasion),
+                    OCCASION_LABELS.get(partner.x_next_occasion_type, ''),
+                    partner.display_name,
+                    VIP_TIER_LABELS.get(partner.x_vip_tier or 'regular', 'Regular'),
+                    partner.user_id.display_name or '',
+                    partner.x_wishlist_count,
+                    partner.x_lifetime_value or 0.0,
+                ],
+                'partner_id': partner.id,
+                'amount': partner.x_lifetime_value or 0.0,
+                'tier': partner.x_vip_tier or 'regular',
+            } for partner in partners],
+            'numeric_from': 5,
+            'summary': [
+                {'label': 'Occasions', 'value': len(partners), 'money': False},
+                {'label': 'Within 7 Days', 'value': imminent, 'money': False},
+                {'label': 'Lifetime Value', 'value': total, 'money': True},
+            ],
+            'splits': [
+                {'title': 'By Occasion', 'rows': self._split_rows(by_kind)},
+                {'title': 'By Window',
+                 'rows': self._split_rows(by_window, order=OCCASION_WINDOWS)},
+                {'title': 'By Tier', 'rows': self._split_rows(by_tier)},
+            ],
+        }
+
+    @staticmethod
+    def _occasion_when(days):
+        """A countdown, not a date. The reader is deciding about this morning."""
+        days = days or 0
+        if days <= 0:
+            return 'Today'
+        if days == 1:
+            return 'Tomorrow'
+        return f'in {days} days'
+
+    @staticmethod
+    def _occasion_window(days):
+        days = days or 0
+        if days <= 7:
+            return 'This week'
+        if days <= 30:
+            return 'This month'
+        return 'Later'
+
+    @api.model
+    def _split_rows(self, totals, order=None):
+        """Rank a {label: amount} map and give each row its share of the peak.
+
+        `order` overrides the ranking with a fixed sequence of labels, for a
+        split whose categories mean something in their own order. A time
+        window is the case that matters: ranking it by value produces
+        "Later, This week, This month", which nobody reads as a sequence.
+        """
+        if order:
+            rows = [{'label': label, 'revenue': totals[label]}
+                    for label in order if label in totals]
+        else:
+            rows = sorted(
+                ({'label': label, 'revenue': amount} for label, amount in totals.items()),
+                key=lambda row: row['revenue'], reverse=True)
         peak = max((row['revenue'] for row in rows), default=0.0)
         for row in rows:
             row['share'] = (row['revenue'] / peak * 100) if peak else 0.0
@@ -385,6 +480,7 @@ class SamraDashboard(models.AbstractModel):
             'orders': self._breakdown_orders,
             'leads': self._breakdown_leads,
             'customers': self._breakdown_customers,
+            'occasions': self._breakdown_occasions,
         }
         if kind not in handlers:
             raise ValueError(f"Unknown breakdown kind {kind!r}.")

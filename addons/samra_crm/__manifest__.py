@@ -59,6 +59,7 @@ field types match exactly.
             'samra_crm/static/src/customer_360/**/*',
             'samra_crm/static/src/dashboard/**/*',
             'samra_crm/static/src/breakdown/**/*',
+            'samra_crm/static/src/occasions/**/*',
         ],
         # The point of sale runs a separate frontend from its own bundle, so
         # the theme has to be listed again here -- each bundle is its own SCSS
