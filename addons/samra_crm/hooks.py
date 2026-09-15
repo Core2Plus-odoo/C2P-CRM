@@ -15,6 +15,8 @@ Safe to run on:
 
 import logging
 
+from .models.samra_ownership import adopt_studio_models
+
 _logger = logging.getLogger(__name__)
 
 # The Samra pipeline. Exactly one stage may be the winning stage.
@@ -50,6 +52,10 @@ VIP_TIERS_FOR_INSTANT_DISCOUNT = ('vip', 'vvip')
 
 
 def post_init_hook(env):
+    # Before anything else: if Studio prototyped these models, claim them, so
+    # the rest of the install and every later upgrade see a module that owns
+    # what it declares.
+    adopt_studio_models(env)
     _setup_pipeline(env)
     _setup_lost_reasons(env)
     _setup_loyalty_programs(env)

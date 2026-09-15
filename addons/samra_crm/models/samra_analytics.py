@@ -19,27 +19,23 @@ from datetime import date
 
 from odoo import api, fields, models
 
+from .samra_metrics import CONFIRMED_STATES
+
 MONTHS_OF_HISTORY = 6
 TOP_N = 5
-
-CONFIRMED_STATES = ('sale', 'done')
 
 MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-
 def _month_key(value):
     return (value.year, value.month)
-
 
 def _month_label(year, month):
     return f"{MONTH_LABELS[month - 1]} {str(year)[2:]}"
 
-
 def _shift_month(year, month, delta):
     index = (year * 12 + (month - 1)) + delta
     return index // 12, index % 12 + 1
-
 
 class ResPartnerAnalytics(models.Model):
     _inherit = 'res.partner'
