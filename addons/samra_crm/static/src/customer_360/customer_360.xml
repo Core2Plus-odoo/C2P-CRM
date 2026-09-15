@@ -223,7 +223,7 @@
 
                                 <t t-foreach="trendAxis" t-as="tick" t-key="tick.label">
                                     <line x1="40" t-att-y1="tick.y" t-att-x2="trendRight" t-att-y2="tick.y"
-                                          t-att-stroke="tick.label === '0' ? 'var(--samra-grid-firm)' : 'var(--samra-grid)'"
+                                          t-att-stroke="tick.baseline ? 'var(--samra-grid-firm)' : 'var(--samra-grid)'"
                                           stroke-width="1"/>
                                     <text x="34" t-att-y="tick.y + 3" text-anchor="end" t-esc="tick.label"/>
                                 </t>
@@ -231,7 +231,8 @@
                                 <t t-foreach="trendBars" t-as="bar" t-key="bar.key">
                                     <rect t-att-x="bar.x" t-att-y="bar.y" t-att-width="bar.width"
                                           t-att-height="bar.height" rx="2" fill="url(#samraBar)"/>
-                                    <text t-att-x="bar.centre" t-att-y="bar.valueY" text-anchor="middle"
+                                    <text t-if="!bar.empty" t-att-x="bar.centre"
+                                          t-att-y="bar.valueY" text-anchor="middle"
                                           class="samra-trend__val" t-esc="bar.value"/>
                                     <text t-att-x="bar.centre" y="170" text-anchor="middle" t-esc="bar.label"/>
                                     <text t-att-x="bar.centre" y="184" text-anchor="middle"

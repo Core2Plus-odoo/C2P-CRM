@@ -106,6 +106,19 @@ export class SamraCustomer360 extends Component {
         return this.plain(amount);
     }
 
+    /**
+     * Axis ticks always name a number. compact() renders zero as "none",
+     * which reads correctly under an empty bar and absurdly on a scale --
+     * an axis of "none / none / 0" describes nothing.
+     */
+    axisLabel(value) {
+        const amount = Number(value || 0);
+        if (Math.abs(amount) >= 1000) {
+            return `${(amount / 1000).toLocaleString("en-AE", { maximumFractionDigits: 1 })}k`;
+        }
+        return this.plain(amount);
+    }
+
     points(value) {
         return Math.round(Number(value) || 0).toLocaleString("en-AE");
     }
@@ -175,10 +188,15 @@ export class SamraCustomer360 extends Component {
     get trendAxis() {
         const months = this.analytics.monthly || [];
         const peak = Math.max(...months.map((m) => m.revenue), 0);
+        // baseline is carried as a flag rather than inferred from the label
+        // text: the zero line is structural, and a formatter change should not
+        // silently restyle it.
         return [
-            { y: CHART.baseline, label: "0" },
-            { y: CHART.baseline - CHART.plotHeight / 2, label: this.compact(peak / 2) },
-            { y: CHART.baseline - CHART.plotHeight, label: this.compact(peak) },
+            { y: CHART.baseline, label: "0", baseline: true },
+            { y: CHART.baseline - CHART.plotHeight / 2, label: this.axisLabel(peak / 2),
+              baseline: false },
+            { y: CHART.baseline - CHART.plotHeight, label: this.axisLabel(peak),
+              baseline: false },
         ];
     }
 
