@@ -245,6 +245,68 @@ jobs:
             exit 1
           fi
 
+
+      - name: Upgrade a database where the models are still manual
+        # The failure this exists to prevent took production down twenty
+        # minutes after the merge, and every check above was green for it.
+        #
+        # On the live instance these four models are Studio/XML-RPC creations:
+        # ir_model rows with state='manual'. The registry builds a manual
+        # model from ir_model_fields, NOT from the Python class, so a field the
+        # class adds does not exist when Odoo validates the views -- and the
+        # upgrade dies on the view before the adoption in post-migrate can run:
+        #
+        #     Field "x_allowed_fields" does not exist in model
+        #     "x_samra_flow_definition"
+        #
+        # A database built by installing the module never has a manual model,
+        # so nothing above can see this. This makes one.
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: odoo
+          PGPASSWORD: odoo
+        run: |
+          set -o pipefail
+          PSQL="psql -h localhost -U odoo -d ci -tAc"
+
+          # Wind the database back to what the prototype left behind: manual
+          # models, manual fields, no XML ids, and neither of the columns this
+          # version adds.
+          $PSQL "UPDATE ir_model SET state = 'manual' WHERE model LIKE 'x\_samra\_flow%'"
+          $PSQL "UPDATE ir_model_fields SET state = 'manual' WHERE model LIKE 'x\_samra\_flow%' AND name LIKE 'x\_%'"
+          $PSQL "DELETE FROM ir_model_data WHERE module = 'samra_crm' AND name LIKE '%x_samra_flow%'"
+          $PSQL "DELETE FROM ir_model_fields WHERE model = 'x_samra_flow_definition' AND name = 'x_allowed_fields'"
+          $PSQL "DELETE FROM ir_model_fields WHERE model = 'x_samra_flow_step' AND name = 'x_action_user_id'"
+          $PSQL "ALTER TABLE x_samra_flow_definition DROP COLUMN IF EXISTS x_allowed_fields"
+          $PSQL "ALTER TABLE x_samra_flow_step DROP COLUMN IF EXISTS x_action_user_id"
+          $PSQL "UPDATE ir_module_module SET latest_version = '19.0.0.0.0' WHERE name = 'samra_crm'"
+
+          python "$HOME/odoo/odoo-bin" \
+            -d ci \
+            --addons-path="$HOME/odoo/addons,$GITHUB_WORKSPACE/repo/addons" \
+            -u samra_crm \
+            --db_host=localhost --db_port=5432 \
+            --db_user=odoo --db_password=odoo \
+            --stop-after-init --log-level=info \
+            2>&1 | tee manual.log
+
+          # The models must now belong to the module, and the field the class
+          # adds must exist as a real column.
+          manual=$($PSQL "select count(*) from ir_model where model like 'x\_samra\_flow%' and state != 'base'")
+          if [ "$manual" != "0" ]; then
+            echo "::error::$manual flow model(s) are still manual after the upgrade"
+            $PSQL "select model || ': ' || state from ir_model where model like 'x\_samra\_flow%'"
+            exit 1
+          fi
+
+          column=$($PSQL "select count(*) from information_schema.columns where table_name = 'x_samra_flow_definition' and column_name = 'x_allowed_fields'")
+          if [ "$column" != "1" ]; then
+            echo "::error::x_allowed_fields was never created"
+            exit 1
+          fi
+          echo "flow models adopted, x_allowed_fields present"
+
       - name: Static checks
         run: |
           cd "$GITHUB_WORKSPACE/repo"
@@ -261,4 +323,5 @@ jobs:
             upgrade.log
             rename.log
             migrate.log
+            manual.log
           if-no-files-found: ignore
