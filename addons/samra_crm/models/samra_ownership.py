@@ -56,6 +56,13 @@ STUDIO_MODELS = (
     'x_samra_wishlist',
     'x_samra_viewed_product',
     'x_samra_whatsapp_log',
+    # Prototyped live over XML-RPC before the flow engine was packaged, so
+    # they arrive here the same way the first three did: manual rows holding
+    # real data that this module now declares in Python.
+    'x_samra_flow_definition',
+    'x_samra_flow_step',
+    'x_samra_flow_instance',
+    'x_samra_flow_log',
 )
 
 

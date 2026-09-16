@@ -97,4 +97,97 @@
         <field name="perm_unlink" eval="1"/>
     </record>
 
+    <!-- Flow engine.
+
+         Read for everyone, authoring for managers only, and that asymmetry is
+         the security fix rather than a preference. base_automation runs a
+         rule's server action as sudo (base_automation.py:996), and an action
+         step writes a field the step itself names. With the employee-writable
+         ACL this shipped with, any user could have arbitrary fields written
+         with superuser rights the next time anybody created a lead.
+
+         Instances and logs are the engine's own output. Nobody hand-writes
+         them, so nobody needs create or unlink; the engine runs as sudo and is
+         unaffected by the absence. -->
+
+    <record id="access_samra_flow_definition_user" model="ir.model.access">
+        <field name="name">x_samra_flow_definition.user</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_flow_definition')]"/>
+        <field name="group_id" ref="base.group_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_flow_definition_manager" model="ir.model.access">
+        <field name="name">x_samra_flow_definition.manager</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_flow_definition')]"/>
+        <field name="group_id" ref="sales_team.group_sale_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="access_samra_flow_step_user" model="ir.model.access">
+        <field name="name">x_samra_flow_step.user</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_flow_step')]"/>
+        <field name="group_id" ref="base.group_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_flow_step_manager" model="ir.model.access">
+        <field name="name">x_samra_flow_step.manager</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_flow_step')]"/>
+        <field name="group_id" ref="sales_team.group_sale_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="access_samra_flow_instance_user" model="ir.model.access">
+        <field name="name">x_samra_flow_instance.user</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_flow_instance')]"/>
+        <field name="group_id" ref="base.group_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_flow_instance_manager" model="ir.model.access">
+        <field name="name">x_samra_flow_instance.manager</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_flow_instance')]"/>
+        <field name="group_id" ref="sales_team.group_sale_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="access_samra_flow_log_user" model="ir.model.access">
+        <field name="name">x_samra_flow_log.user</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_flow_log')]"/>
+        <field name="group_id" ref="base.group_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_flow_log_manager" model="ir.model.access">
+        <field name="name">x_samra_flow_log.manager</field>
+        <field name="model_id" search="[('model', '=', 'x_samra_flow_log')]"/>
+        <field name="group_id" ref="sales_team.group_sale_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
 </odoo>
