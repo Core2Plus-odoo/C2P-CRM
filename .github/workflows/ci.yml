@@ -1,0 +1,264 @@
+name: Install and test on Odoo 19
+
+# Every break this project has had in production was the kind a real install
+# catches in under a minute: a view attribute Odoo 19 dropped, a constraint
+# syntax that now only warns, a model used without being depended on, an ACL
+# keyed on an XML id that does not exist. None of them are visible by reading
+# the diff, and all of them took the instance down or silently disabled
+# something. So the gate is an actual Odoo installing this module against an
+# actual PostgreSQL, which is the only thing that has reliably found them.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  odoo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Check out the addons
+        uses: actions/checkout@v4
+        with:
+          path: repo
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install system libraries Odoo's wheels need
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libxml2-dev libxslt1-dev libldap2-dev libsasl2-dev \
+            libssl-dev libjpeg-dev zlib1g-dev libpq-dev
+
+      - name: Fetch Odoo 19
+        run: |
+          git clone --depth 1 --branch 19.0 \
+            https://github.com/odoo/odoo.git "$HOME/odoo"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: pip-${{ runner.os }}-
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip wheel
+          pip install -r "$HOME/odoo/requirements.txt"
+          # Not in Odoo's requirements but imported by addons it ships: lxml
+          # split html.clean out, and auth_passkey vendors a webauthn that
+          # needs these two. Without them the registry never finishes loading
+          # and every module looks broken.
+          pip install lxml_html_clean cbor2 asn1crypto
+
+      - name: Install the modules
+        # No --test-enable here. Installing samra_crm pulls in crm, sale,
+        # stock, point_of_sale, loyalty and base_automation, and --test-enable
+        # would run the test suite of every one of them -- the better part of
+        # an hour to tell us nothing about this repo. Tests run in the next
+        # step, scoped.
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: odoo
+          PGPASSWORD: odoo
+        run: |
+          set -o pipefail
+          python "$HOME/odoo/odoo-bin" \
+            -d ci \
+            --addons-path="$HOME/odoo/addons,$GITHUB_WORKSPACE/repo/addons" \
+            -i samra_crm,samra_gold \
+            --db_host=localhost --db_port=5432 \
+            --db_user=odoo --db_password=odoo \
+            --stop-after-init --log-level=warn \
+            2>&1 | tee install.log
+
+          # The failure mode this exists to prevent: Odoo skips a module whose
+          # dependency it cannot satisfy, logs one WARNING, carries on, and the
+          # build goes green having tested nothing. That is exactly what
+          # happened on the first run -- samra_crm depended on helpdesk, which
+          # is Enterprise-only, so it never installed and the suite "passed".
+          if grep -q "some depends are not loaded" install.log; then
+            echo "::error::a module was skipped for missing dependencies"
+            grep "some depends are not loaded" install.log
+            exit 1
+          fi
+
+          for module in samra_crm samra_gold; do
+            state=$(PGPASSWORD=odoo psql -h localhost -U odoo -d ci -tAc \
+              "select state from ir_module_module where name = '$module'")
+            echo "$module: $state"
+            if [ "$state" != "installed" ]; then
+              echo "::error::$module is '$state', not installed"
+              exit 1
+            fi
+          done
+
+      - name: Upgrade over itself, and run this repo's tests
+        # The install path and the upgrade path are different code, and the
+        # outage that took production down was upgrade-only: the module
+        # installed cleanly on a fresh database and aborted on an existing one,
+        # leaving a schema that no longer matched the running code. Running the
+        # tests on this pass exercises both at once.
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: odoo
+          PGPASSWORD: odoo
+        run: |
+          set -o pipefail
+          python "$HOME/odoo/odoo-bin" \
+            -d ci \
+            --addons-path="$HOME/odoo/addons,$GITHUB_WORKSPACE/repo/addons" \
+            -u samra_crm,samra_gold \
+            --db_host=localhost --db_port=5432 \
+            --db_user=odoo --db_password=odoo \
+            --stop-after-init --log-level=test \
+            --test-enable --test-tags '/samra_crm,/samra_gold' \
+            2>&1 | tee upgrade.log
+
+          # Read Odoo's own verdict rather than grepping for ERROR. A test
+          # that asserts a constraint rejects a duplicate MUST make PostgreSQL
+          # log a duplicate-key error -- that is the assertion working -- and
+          # the first version of this check failed the build on exactly that.
+          #
+          # A missing result line is also a failure: it means no test ran.
+          if ! grep -qE "odoo\.tests\.result: 0 failed, 0 error\(s\)" upgrade.log; then
+            echo "::error::tests failed, or no test ran at all"
+            grep -E "odoo\.tests\.(result|stats)" upgrade.log || \
+              echo "no odoo.tests.result line in the log"
+            grep -E "^(FAIL|ERROR):" upgrade.log || true
+            exit 1
+          fi
+          grep -E "odoo\.tests\.(result|stats)" upgrade.log
+
+          # Odoo 19 downgraded some hard failures to warnings. _sql_constraints
+          # is the one that bit us: it now logs and carries on, so a uniqueness
+          # rule silently is not there. Treat those as build failures.
+          if grep -qiE "_sql_constraints|no longer supported|Invalid XML|RELAXNG" upgrade.log; then
+            echo "::error::Odoo logged a deprecation or validation warning"
+            grep -iE "_sql_constraints|no longer supported|Invalid XML|RELAXNG" upgrade.log
+            exit 1
+          fi
+
+
+      - name: Run the migration path, and prove the guard refuses a rename
+        # The two steps above never execute a migration script: a fresh install
+        # runs none, and the upgrade above is same-version, so Odoo skips them.
+        # That leaves the code path which caused the outage -- and the guard
+        # protecting the flow history from being silently stranded -- untested.
+        #
+        # Stamping the installed version back makes Odoo run every migration
+        # folder the module ships. What this does NOT do is rehearse an upgrade
+        # from an older schema; the columns here are already current. It tests
+        # that the scripts run and that the guard's logic is right, which is
+        # what the hand-run reproduction tested.
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: odoo
+          PGPASSWORD: odoo
+        run: |
+          set -o pipefail
+          PSQL="psql -h localhost -U odoo -d ci -tAc"
+
+          upgrade() {
+            python "$HOME/odoo/odoo-bin" \
+              -d ci \
+              --addons-path="$HOME/odoo/addons,$GITHUB_WORKSPACE/repo/addons" \
+              -u samra_crm \
+              --db_host=localhost --db_port=5432 \
+              --db_user=odoo --db_password=odoo \
+              --stop-after-init --log-level=info \
+              2>&1 | tee "$1"
+          }
+
+          # A renamed column with data behind it is the case that loses the
+          # flow history. The upgrade must refuse, not carry on.
+          $PSQL "ALTER TABLE x_samra_flow_step RENAME COLUMN x_action_field TO x_act_field"
+          $PSQL "INSERT INTO x_samra_flow_step (x_name, x_step_type) VALUES ('ci prototype step', 'action')"
+          $PSQL "UPDATE ir_module_module SET latest_version = '19.0.0.0.0' WHERE name = 'samra_crm'"
+
+          if upgrade rename.log; then
+            echo "::error::the upgrade succeeded against a renamed column -- the guard did not fire"
+            exit 1
+          fi
+          if ! grep -q "Refusing to upgrade samra_crm" rename.log; then
+            echo "::error::the upgrade failed, but not on the guard"
+            tail -30 rename.log
+            exit 1
+          fi
+          grep "columns present with no field declared" rename.log
+
+          # Put it back. The same upgrade must now run and succeed.
+          $PSQL "ALTER TABLE x_samra_flow_step RENAME COLUMN x_act_field TO x_action_field"
+          $PSQL "DELETE FROM x_samra_flow_step WHERE x_name = 'ci prototype step'"
+          $PSQL "UPDATE ir_module_module SET latest_version = '19.0.0.0.0' WHERE name = 'samra_crm'"
+
+          upgrade migrate.log
+
+          manifest="$GITHUB_WORKSPACE/repo/addons/samra_crm/__manifest__.py"
+          version=$(python -c "import ast, pathlib; print(ast.literal_eval(pathlib.Path('$manifest').read_text())['version'])")
+          echo "samra_crm manifest version: $version"
+
+          for phase in pre post; do
+            script="$GITHUB_WORKSPACE/repo/addons/samra_crm/migrations/$version/$phase-migrate.py"
+            [ -f "$script" ] || continue
+            if ! grep -q "Running upgrade .*$version.*$phase-migrate" migrate.log; then
+              echo "::error::$version/$phase-migrate.py exists but Odoo never ran it"
+              grep "Running upgrade" migrate.log || echo "no migration ran at all"
+              exit 1
+            fi
+          done
+          grep "Running upgrade" migrate.log
+
+          state=$(PGPASSWORD=odoo psql -h localhost -U odoo -d ci -tAc \
+            "select state || ' ' || latest_version from ir_module_module where name = 'samra_crm'")
+          echo "samra_crm after the migration: $state"
+          if [ "$state" != "installed $version" ]; then
+            echo "::error::expected 'installed $version'"
+            exit 1
+          fi
+
+      - name: Static checks
+        run: |
+          cd "$GITHUB_WORKSPACE/repo"
+          python tools/check_undefined_names.py $(find addons -name '*.py')
+          python tools/check_template_calls.py addons/samra_crm/static/src
+
+      - name: Keep the logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odoo-logs
+          path: |
+            install.log
+            upgrade.log
+            rename.log
+            migrate.log
+          if-no-files-found: ignore

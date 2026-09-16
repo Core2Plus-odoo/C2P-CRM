@@ -59,6 +59,7 @@ def post_init_hook(env):
     _setup_pipeline(env)
     _setup_lost_reasons(env)
     _setup_loyalty_programs(env)
+    _setup_flow_engine(env)
 
 
 def _find_stage(env, name):
@@ -159,3 +160,66 @@ def _setup_loyalty_programs(env):
                         'discount_applicability': 'order', 'required_points': 1}),
             ],
         })
+
+
+# ----------------------------------------------------------------------
+# Flow engine
+# ----------------------------------------------------------------------
+
+FLOW_ACTION_NAME = 'Samra Flow Engine - Execute On Lead Create'
+FLOW_AUTOMATION_NAME = 'Samra Flow Engine Trigger - Lead Create'
+
+# One line, calling a method that lives in this repo. The live instance
+# currently holds the whole engine inline in the server action's code, which
+# means the logic routing real leads is in a database column nobody reviews
+# and nothing tests. Rewriting it to a call is the point of packaging this.
+FLOW_ENGINE_CODE = "env['x_samra_flow_definition'].trigger_for_model(record)"
+
+
+def _setup_flow_engine(env):
+    """Point the lead-create automation at the packaged engine.
+
+    Get-or-create by name: this installs onto an instance where the automation
+    and its action already exist, prototyped over XML-RPC, and creating a
+    second one would run every flow twice.
+    """
+    # Declared in depends, so this should always hold. Checked anyway: this
+    # runs from a migration, and an exception there fails the whole registry
+    # load rather than one feature -- which is how an instance ends up serving
+    # a bare 500 on every URL instead of a CRM with one dead menu.
+    if 'base.automation' not in env:
+        _logger.warning(
+            "Samra CRM: base_automation is absent, flow engine left unwired")
+        return
+
+    lead_model = env['ir.model'].search([('model', '=', 'crm.lead')], limit=1)
+    if not lead_model:
+        _logger.info("Samra CRM: crm.lead not installed, skipping flow engine")
+        return
+
+    action = env['ir.actions.server'].search(
+        [('name', '=', FLOW_ACTION_NAME)], limit=1)
+    if action:
+        action.write({'code': FLOW_ENGINE_CODE, 'model_id': lead_model.id})
+    else:
+        action = env['ir.actions.server'].create({
+            'name': FLOW_ACTION_NAME,
+            'model_id': lead_model.id,
+            'state': 'code',
+            'code': FLOW_ENGINE_CODE,
+        })
+
+    automation = env['base.automation'].search(
+        [('name', '=', FLOW_AUTOMATION_NAME)], limit=1)
+    values = {'action_server_ids': [(6, 0, [action.id])]}
+    if automation:
+        automation.write(values)
+    else:
+        env['base.automation'].create(dict(
+            values,
+            name=FLOW_AUTOMATION_NAME,
+            model_id=lead_model.id,
+            trigger='on_create',
+        ))
+
+    _logger.info("Samra CRM: flow engine wired to %s", FLOW_ACTION_NAME)

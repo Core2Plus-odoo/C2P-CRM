@@ -12,3 +12,4 @@ from . import samra_whatsapp_log
 from . import samra_dashboard
 from . import samra_occasions
 from . import samra_recommendations
+from . import samra_flow

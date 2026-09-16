@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Flow definitions -->
+
+    <record id="view_samra_flow_definition_list" model="ir.ui.view">
+        <field name="name">x_samra_flow_definition.list</field>
+        <field name="model">x_samra_flow_definition</field>
+        <field name="arch" type="xml">
+            <list string="Flows">
+                <field name="x_name"/>
+                <field name="x_target_model"/>
+                <field name="x_trigger_type"/>
+                <field name="x_allowed_fields" optional="show"/>
+                <field name="x_active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_samra_flow_definition_form" model="ir.ui.view">
+        <field name="name">x_samra_flow_definition.form</field>
+        <field name="model">x_samra_flow_definition</field>
+        <field name="arch" type="xml">
+            <form string="Flow">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="x_name" placeholder="High-Value Lead Routing"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="x_target_model" placeholder="crm.lead"/>
+                            <field name="x_trigger_type"/>
+                            <field name="x_active"/>
+                        </group>
+                        <group>
+                            <field name="x_allowed_fields" placeholder="user_id,priority"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-warning" role="alert">
+                        Steps run with superuser rights, because Odoo's automation
+                        engine runs its server actions that way. A Set Field step
+                        can only write a field named in <b>Writable Fields</b>;
+                        leave it empty and no field can be set at all.
+                    </div>
+                    <field name="x_description" placeholder="What this flow is for"/>
+                    <notebook>
+                        <page name="steps" string="Steps">
+                            <field name="x_step_ids">
+                                <list editable="bottom">
+                                    <field name="x_sequence" widget="handle"/>
+                                    <field name="x_name"/>
+                                    <field name="x_step_type"/>
+                                    <field name="x_condition_field" optional="show"/>
+                                    <field name="x_condition_operator" optional="show"/>
+                                    <field name="x_condition_value" optional="show"/>
+                                    <field name="x_next_step_if_true" optional="show"/>
+                                    <field name="x_next_step_if_false" optional="show"/>
+                                    <field name="x_action_type" optional="show"/>
+                                    <field name="x_action_field" optional="show"/>
+                                    <field name="x_action_user_id" optional="show"/>
+                                    <field name="x_action_value" optional="show"/>
+                                    <field name="x_next_step" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_samra_flow_definition" model="ir.actions.act_window">
+        <field name="name">Flow Definitions</field>
+        <field name="res_model">x_samra_flow_definition</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Instances: one run of one flow against one record -->
+
+    <record id="view_samra_flow_instance_list" model="ir.ui.view">
+        <field name="name">x_samra_flow_instance.list</field>
+        <field name="model">x_samra_flow_instance</field>
+        <field name="arch" type="xml">
+            <list string="Flow Runs" create="false"
+                  decoration-danger="x_status == 'error'"
+                  decoration-muted="x_status == 'running'">
+                <field name="x_start_date"/>
+                <field name="x_flow_id"/>
+                <field name="x_record_name"/>
+                <field name="x_res_model" optional="hide"/>
+                <field name="x_current_step_id" optional="hide"/>
+                <field name="x_status" widget="badge"
+                       decoration-success="x_status == 'completed'"
+                       decoration-danger="x_status == 'error'"/>
+                <field name="x_end_date" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_samra_flow_instance_form" model="ir.ui.view">
+        <field name="name">x_samra_flow_instance.form</field>
+        <field name="model">x_samra_flow_instance</field>
+        <field name="arch" type="xml">
+            <form string="Flow Run" create="false">
+                <header>
+                    <button name="action_open_record" type="object"
+                            string="Open Record" class="btn-primary"
+                            invisible="not x_res_id"/>
+                    <field name="x_status" widget="statusbar"
+                           statusbar_visible="running,completed,error"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="x_flow_id"/>
+                            <field name="x_record_name"/>
+                            <field name="x_res_model"/>
+                            <field name="x_res_id"/>
+                        </group>
+                        <group>
+                            <field name="x_current_step_id"/>
+                            <field name="x_start_date"/>
+                            <field name="x_end_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="log" string="Execution Log">
+                            <field name="x_log_ids">
+                                <list create="false">
+                                    <field name="x_timestamp"/>
+                                    <field name="x_step_id"/>
+                                    <field name="x_outcome"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_samra_flow_instance_search" model="ir.ui.view">
+        <field name="name">x_samra_flow_instance.search</field>
+        <field name="model">x_samra_flow_instance</field>
+        <field name="arch" type="xml">
+            <search string="Flow Runs">
+                <field name="x_record_name"/>
+                <field name="x_flow_id"/>
+                <filter name="errors" string="Errors"
+                        domain="[('x_status', '=', 'error')]"/>
+                <filter name="running" string="Still Running"
+                        domain="[('x_status', '=', 'running')]"/>
+                <group>
+                    <filter name="group_flow" string="Flow"
+                            context="{'group_by': 'x_flow_id'}"/>
+                    <filter name="group_status" string="Status"
+                            context="{'group_by': 'x_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_samra_flow_instance" model="ir.actions.act_window">
+        <field name="name">Flow Runs</field>
+        <field name="res_model">x_samra_flow_instance</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_samra_flow_instance_search"/>
+    </record>
+
+    <!-- Log, as a flat list for when you want every step across every run -->
+
+    <record id="view_samra_flow_log_list" model="ir.ui.view">
+        <field name="name">x_samra_flow_log.list</field>
+        <field name="model">x_samra_flow_log</field>
+        <field name="arch" type="xml">
+            <list string="Flow Log" create="false">
+                <field name="x_timestamp"/>
+                <field name="x_instance_id"/>
+                <field name="x_step_id"/>
+                <field name="x_outcome"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_samra_flow_log" model="ir.actions.act_window">
+        <field name="name">Flow Execution Log</field>
+        <field name="res_model">x_samra_flow_log</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_samra_flow" name="Automation"
+              parent="menu_samra_crm_root" sequence="40"/>
+    <menuitem id="menu_samra_flow_definition" name="Flow Definitions"
+              parent="menu_samra_flow"
+              action="action_samra_flow_definition" sequence="10"/>
+    <menuitem id="menu_samra_flow_instance" name="Flow Runs"
+              parent="menu_samra_flow"
+              action="action_samra_flow_instance" sequence="20"/>
+    <menuitem id="menu_samra_flow_log" name="Execution Log"
+              parent="menu_samra_flow"
+              action="action_samra_flow_log" sequence="30"/>
+
+</odoo>

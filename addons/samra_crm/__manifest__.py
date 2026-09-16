@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Samra Jewellery CRM',
-    'version': '19.0.1.1.0',
+    'version': '19.0.1.2.0',
     'category': 'Sales/CRM',
     'summary': 'Custom CRM extensions for Samra Jewellery — clienteling, WhatsApp log, loyalty & discounts',
     'description': """
@@ -36,8 +36,16 @@ field types match exactly.
         'sale_management',
         'stock',
         'point_of_sale',
-        'helpdesk',
         'loyalty',
+        # The flow engine creates and rewires a base.automation rule.
+        'base_automation',
+        # Deliberately NOT helpdesk. It is Enterprise-only, and depending on
+        # it makes this module uninstallable on Community -- which is how CI
+        # skipped samra_crm entirely and still reported the run as passing.
+        # Nothing here needs it: _samra_tickets() already checks
+        # 'helpdesk.ticket' not in self.env and returns an empty list, so the
+        # profile degrades to a missing panel where Helpdesk is absent and
+        # works unchanged where it is installed.
     ],
     'data': [
         'security/ir.model.access.xml',
@@ -48,6 +56,7 @@ field types match exactly.
         'views/samra_transfer_views.xml',
         'views/samra_demo_data_views.xml',
         'views/samra_dashboard_views.xml',
+        'views/samra_flow_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
