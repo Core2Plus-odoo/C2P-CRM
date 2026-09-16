@@ -143,3 +143,82 @@ def _adopt_fields(env, model_name):
     } for field in fields])
 
     return len(stale)
+
+
+# --- Adoption has to happen before the registry is set up -------------------
+#
+# Doing this in post-migrate was wrong, and production found it in the one way
+# CI could not: on a database where these models are manual, the registry
+# builds them from ir_model_fields, not from the Python class. A field the
+# class declares and the prototype never had -- x_allowed_fields -- therefore
+# does not exist when Odoo validates the views, and the upgrade dies with
+#
+#     Field "x_allowed_fields" does not exist in model "x_samra_flow_definition"
+#
+# before post-migrate ever runs. The ordering only matters when an adoption
+# ALSO adds a field, which is why the first three models adopted cleanly.
+#
+# So the state flip moves to pre-migrate, which runs before setup_models().
+# It is raw SQL on purpose: at that point in the load the ORM cannot be
+# trusted to have these models set up at all, and ir.model.write() refuses to
+# change state anyway.
+
+def _declared_fields_by_model():
+    """Field names each STUDIO_MODELS class declares, read off the classes.
+
+    The registry is mid-build when this is needed, so model._fields is not
+    available or still describes the old code. The Field objects in the class
+    bodies are the new declaration.
+    """
+    import importlib
+    import pkgutil
+
+    from odoo import fields as odoo_fields
+    from odoo.addons.samra_crm import models as models_package
+
+    declared = {}
+    for info in pkgutil.iter_modules(models_package.__path__):
+        module = importlib.import_module(f"{models_package.__name__}.{info.name}")
+        for obj in vars(module).values():
+            if not isinstance(obj, type):
+                continue
+            model_name = getattr(obj, '_name', None)
+            if model_name not in STUDIO_MODELS:
+                continue
+            declared.setdefault(model_name, set()).update(
+                name for name, value in vars(obj).items()
+                if isinstance(value, odoo_fields.Field)
+            )
+    return declared
+
+
+def claim_models_before_setup(cr):
+    """Flip the manual rows to 'base' so the Python classes govern the setup.
+
+    Only fields this module declares are claimed -- a column somebody added in
+    Studio stays manual, for the same reason _adopt_fields is narrow: claiming
+    it would mean an uninstall deletes their data.
+
+    Idempotent, and a no-op on a database that never had the prototype.
+    """
+    cr.execute(
+        "UPDATE ir_model SET state = 'base' "
+        " WHERE model IN %s AND state != 'base' RETURNING model",
+        (tuple(STUDIO_MODELS),))
+    claimed = [row[0] for row in cr.fetchall()]
+
+    fields_claimed = 0
+    for model_name, names in _declared_fields_by_model().items():
+        if not names:
+            continue
+        cr.execute(
+            "UPDATE ir_model_fields SET state = 'base' "
+            " WHERE model = %s AND name IN %s AND state != 'base'",
+            (model_name, tuple(names)))
+        fields_claimed += cr.rowcount
+
+    if claimed or fields_claimed:
+        _logger.info(
+            "Samra CRM: claimed %s before setup, and %s field(s)",
+            claimed or "no models", fields_claimed)
+    return claimed, fields_claimed

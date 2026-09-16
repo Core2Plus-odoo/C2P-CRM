@@ -59,6 +59,8 @@ def migrate(cr, version):
     # upgrade fails with a traceback about the guard rather than the thing the
     # guard protects.
     from odoo.addons.samra_crm.models import samra_flow
+    from odoo.addons.samra_crm.models.samra_ownership import (
+        claim_models_before_setup)
 
     models = [
         samra_flow.SamraFlowDefinition,
@@ -119,3 +121,8 @@ def migrate(cr, version):
             "Samra flow: %s has %s, which no field declares. %d row(s) keep "
             "those values; nothing reads them.",
             table, ", ".join(sorted(orphaned)), rows)
+
+    # Only once the schema is known to be safe: take the manual models over
+    # before the registry is set up, so the Python classes -- and the fields
+    # they add -- govern the tables and the views that reference them.
+    claim_models_before_setup(cr)
