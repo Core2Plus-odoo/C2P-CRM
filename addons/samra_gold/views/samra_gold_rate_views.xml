@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_samra_gold_rate_list" model="ir.ui.view">
+        <field name="name">samra.gold.rate.list</field>
+        <field name="model">samra.gold.rate</field>
+        <field name="arch" type="xml">
+            <list string="Gold Rates" editable="top" default_order="rate_date desc, karat desc">
+                <field name="rate_date"/>
+                <field name="karat" widget="badge"/>
+                <field name="rate_per_gram"/>
+                <field name="source" optional="show"/>
+                <field name="applied_on" optional="show" readonly="1"/>
+                <field name="applied_count" optional="hide" readonly="1"/>
+                <field name="note" optional="hide"/>
+                <button name="action_apply_to_products" type="object" icon="fa-tags"
+                        string="Apply" title="Reprice every product at this karat"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_samra_gold_rate_form" model="ir.ui.view">
+        <field name="name">samra.gold.rate.form</field>
+        <field name="model">samra.gold.rate</field>
+        <field name="arch" type="xml">
+            <form string="Gold Rate">
+                <header>
+                    <button name="action_apply_to_products" type="object"
+                            string="Apply to Products" class="btn-primary"
+                            help="Recompute the sales price of every gold product at this karat."/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="rate_date"/>
+                            <field name="karat"/>
+                            <field name="rate_per_gram"/>
+                        </group>
+                        <group>
+                            <field name="source" placeholder="Dubai Gold &amp; Jewellery Group"/>
+                            <field name="applied_on" readonly="1"/>
+                            <field name="applied_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note" placeholder="Anything worth knowing about this quote"/>
+                    </group>
+                    <p class="text-muted">
+                        Rates are shared by every company. A gold rate is a fact about
+                        the market, not about a branch, so all four read the same
+                        morning figure.
+                    </p>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_samra_gold_rate_search" model="ir.ui.view">
+        <field name="name">samra.gold.rate.search</field>
+        <field name="model">samra.gold.rate</field>
+        <field name="arch" type="xml">
+            <search string="Gold Rates">
+                <field name="rate_date"/>
+                <field name="karat"/>
+                <field name="source"/>
+                <filter name="today" string="Today"
+                        domain="[('rate_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="this_month" string="This Month"
+                        domain="[('rate_date', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="not_applied" string="Never Applied"
+                        domain="[('applied_on', '=', False)]"/>
+                <group>
+                    <filter name="group_karat" string="Karat"
+                            context="{'group_by': 'karat'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'rate_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_samra_gold_rate" model="ir.actions.act_window">
+        <field name="name">Gold Rates</field>
+        <field name="res_model">samra.gold.rate</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_samra_gold_rate_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Set this morning's rate</p>
+            <p>Enter the rate per gram for each karat you trade, then Apply to
+               reprice every gold product. Sales, the POS and quotations all read
+               the ordinary sales price, so nothing else needs to change.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_samra_gold_root" name="Gold Rates"
+              parent="sale.menu_sale_config" sequence="90"/>
+    <menuitem id="menu_samra_gold_rate" name="Daily Rates"
+              parent="menu_samra_gold_root"
+              action="action_samra_gold_rate" sequence="10"/>
+
+</odoo>
