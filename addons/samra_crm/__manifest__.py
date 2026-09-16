@@ -36,10 +36,16 @@ field types match exactly.
         'sale_management',
         'stock',
         'point_of_sale',
-        'helpdesk',
         'loyalty',
         # The flow engine creates and rewires a base.automation rule.
         'base_automation',
+        # Deliberately NOT helpdesk. It is Enterprise-only, and depending on
+        # it makes this module uninstallable on Community -- which is how CI
+        # skipped samra_crm entirely and still reported the run as passing.
+        # Nothing here needs it: _samra_tickets() already checks
+        # 'helpdesk.ticket' not in self.env and returns an empty list, so the
+        # profile degrades to a missing panel where Helpdesk is absent and
+        # works unchanged where it is installed.
     ],
     'data': [
         'security/ir.model.access.xml',
