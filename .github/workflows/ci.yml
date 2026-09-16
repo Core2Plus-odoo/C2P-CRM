@@ -1,0 +1,156 @@
+name: Install and test on Odoo 19
+
+# Every break this project has had in production was the kind a real install
+# catches in under a minute: a view attribute Odoo 19 dropped, a constraint
+# syntax that now only warns, a model used without being depended on, an ACL
+# keyed on an XML id that does not exist. None of them are visible by reading
+# the diff, and all of them took the instance down or silently disabled
+# something. So the gate is an actual Odoo installing this module against an
+# actual PostgreSQL, which is the only thing that has reliably found them.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  odoo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Check out the addons
+        uses: actions/checkout@v4
+        with:
+          path: repo
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install system libraries Odoo's wheels need
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libxml2-dev libxslt1-dev libldap2-dev libsasl2-dev \
+            libssl-dev libjpeg-dev zlib1g-dev libpq-dev
+
+      - name: Fetch Odoo 19
+        run: |
+          git clone --depth 1 --branch 19.0 \
+            https://github.com/odoo/odoo.git "$HOME/odoo"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: pip-${{ runner.os }}-
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip wheel
+          pip install -r "$HOME/odoo/requirements.txt"
+          # Not in Odoo's requirements but imported by addons it ships: lxml
+          # split html.clean out, and auth_passkey vendors a webauthn that
+          # needs these two. Without them the registry never finishes loading
+          # and every module looks broken.
+          pip install lxml_html_clean cbor2 asn1crypto
+
+      - name: Install the modules
+        # No --test-enable here. Installing samra_crm pulls in crm, sale,
+        # stock, point_of_sale, loyalty and base_automation, and --test-enable
+        # would run the test suite of every one of them -- the better part of
+        # an hour to tell us nothing about this repo. Tests run in the next
+        # step, scoped.
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: odoo
+          PGPASSWORD: odoo
+        run: |
+          set -o pipefail
+          python "$HOME/odoo/odoo-bin" \
+            -d ci \
+            --addons-path="$HOME/odoo/addons,$GITHUB_WORKSPACE/repo/addons" \
+            -i samra_crm,samra_gold \
+            --db_host=localhost --db_port=5432 \
+            --db_user=odoo --db_password=odoo \
+            --stop-after-init --log-level=warn \
+            2>&1 | tee install.log
+
+      - name: Upgrade over itself, and run this repo's tests
+        # The install path and the upgrade path are different code, and the
+        # outage that took production down was upgrade-only: the module
+        # installed cleanly on a fresh database and aborted on an existing one,
+        # leaving a schema that no longer matched the running code. Running the
+        # tests on this pass exercises both at once.
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: odoo
+          PGPASSWORD: odoo
+        run: |
+          set -o pipefail
+          python "$HOME/odoo/odoo-bin" \
+            -d ci \
+            --addons-path="$HOME/odoo/addons,$GITHUB_WORKSPACE/repo/addons" \
+            -u samra_crm,samra_gold \
+            --db_host=localhost --db_port=5432 \
+            --db_user=odoo --db_password=odoo \
+            --stop-after-init --log-level=test \
+            --test-enable --test-tags '/samra_crm,/samra_gold' \
+            2>&1 | tee upgrade.log
+
+          # odoo-bin's exit code is the primary signal; this is a second one,
+          # because a failing assertion is logged at ERROR and on some paths
+          # the process still exits 0, which would turn a red build green.
+          if grep -qE "(FAIL|ERROR).*(samra|odoo\.tests)" upgrade.log; then
+            echo "::error::a test failed"
+            grep -E "(FAIL|ERROR).*(samra|odoo\.tests)" upgrade.log
+            exit 1
+          fi
+
+          # Odoo 19 downgraded some hard failures to warnings. _sql_constraints
+          # is the one that bit us: it now logs and carries on, so a uniqueness
+          # rule silently is not there. Treat those as build failures.
+          if grep -qiE "_sql_constraints|no longer supported|Invalid XML|RELAXNG" upgrade.log; then
+            echo "::error::Odoo logged a deprecation or validation warning"
+            grep -iE "_sql_constraints|no longer supported|Invalid XML|RELAXNG" upgrade.log
+            exit 1
+          fi
+
+      - name: Static checks
+        run: |
+          cd "$GITHUB_WORKSPACE/repo"
+          python tools/check_undefined_names.py $(find addons -name '*.py')
+          python tools/check_template_calls.py addons/samra_crm/static/src
+
+      - name: Keep the logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odoo-logs
+          path: |
+            install.log
+            upgrade.log
+          if-no-files-found: ignore
