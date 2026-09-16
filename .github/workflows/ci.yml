@@ -166,6 +166,85 @@ jobs:
             exit 1
           fi
 
+
+      - name: Run the migration path, and prove the guard refuses a rename
+        # The two steps above never execute a migration script: a fresh install
+        # runs none, and the upgrade above is same-version, so Odoo skips them.
+        # That leaves the code path which caused the outage -- and the guard
+        # protecting the flow history from being silently stranded -- untested.
+        #
+        # Stamping the installed version back makes Odoo run every migration
+        # folder the module ships. What this does NOT do is rehearse an upgrade
+        # from an older schema; the columns here are already current. It tests
+        # that the scripts run and that the guard's logic is right, which is
+        # what the hand-run reproduction tested.
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: odoo
+          PGPASSWORD: odoo
+        run: |
+          set -o pipefail
+          PSQL="psql -h localhost -U odoo -d ci -tAc"
+
+          upgrade() {
+            python "$HOME/odoo/odoo-bin" \
+              -d ci \
+              --addons-path="$HOME/odoo/addons,$GITHUB_WORKSPACE/repo/addons" \
+              -u samra_crm \
+              --db_host=localhost --db_port=5432 \
+              --db_user=odoo --db_password=odoo \
+              --stop-after-init --log-level=info \
+              2>&1 | tee "$1"
+          }
+
+          # A renamed column with data behind it is the case that loses the
+          # flow history. The upgrade must refuse, not carry on.
+          $PSQL "ALTER TABLE x_samra_flow_step RENAME COLUMN x_action_field TO x_act_field"
+          $PSQL "INSERT INTO x_samra_flow_step (x_name, x_step_type) VALUES ('ci prototype step', 'action')"
+          $PSQL "UPDATE ir_module_module SET latest_version = '19.0.0.0.0' WHERE name = 'samra_crm'"
+
+          if upgrade rename.log; then
+            echo "::error::the upgrade succeeded against a renamed column -- the guard did not fire"
+            exit 1
+          fi
+          if ! grep -q "Refusing to upgrade samra_crm" rename.log; then
+            echo "::error::the upgrade failed, but not on the guard"
+            tail -30 rename.log
+            exit 1
+          fi
+          grep "columns present with no field declared" rename.log
+
+          # Put it back. The same upgrade must now run and succeed.
+          $PSQL "ALTER TABLE x_samra_flow_step RENAME COLUMN x_act_field TO x_action_field"
+          $PSQL "DELETE FROM x_samra_flow_step WHERE x_name = 'ci prototype step'"
+          $PSQL "UPDATE ir_module_module SET latest_version = '19.0.0.0.0' WHERE name = 'samra_crm'"
+
+          upgrade migrate.log
+
+          manifest="$GITHUB_WORKSPACE/repo/addons/samra_crm/__manifest__.py"
+          version=$(python -c "import ast, pathlib; print(ast.literal_eval(pathlib.Path('$manifest').read_text())['version'])")
+          echo "samra_crm manifest version: $version"
+
+          for phase in pre post; do
+            script="$GITHUB_WORKSPACE/repo/addons/samra_crm/migrations/$version/$phase-migrate.py"
+            [ -f "$script" ] || continue
+            if ! grep -q "Running upgrade .*$version.*$phase-migrate" migrate.log; then
+              echo "::error::$version/$phase-migrate.py exists but Odoo never ran it"
+              grep "Running upgrade" migrate.log || echo "no migration ran at all"
+              exit 1
+            fi
+          done
+          grep "Running upgrade" migrate.log
+
+          state=$(PGPASSWORD=odoo psql -h localhost -U odoo -d ci -tAc \
+            "select state || ' ' || latest_version from ir_module_module where name = 'samra_crm'")
+          echo "samra_crm after the migration: $state"
+          if [ "$state" != "installed $version" ]; then
+            echo "::error::expected 'installed $version'"
+            exit 1
+          fi
+
       - name: Static checks
         run: |
           cd "$GITHUB_WORKSPACE/repo"
@@ -180,4 +259,6 @@ jobs:
           path: |
             install.log
             upgrade.log
+            rename.log
+            migrate.log
           if-no-files-found: ignore

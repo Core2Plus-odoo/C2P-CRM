@@ -31,6 +31,11 @@ from odoo import fields as odoo_fields
 
 _logger = logging.getLogger(__name__)
 
+# Odoo puts the log-access fields on the model class itself, so they come back
+# from the class body just like a declared one, and the table has always had
+# them. Comparing them either way only produces noise.
+MAGIC = {'id', 'create_uid', 'create_date', 'write_uid', 'write_date'}
+
 
 def _declared_columns(cls):
     """Column names the Python class expects, taken off the class itself.
@@ -46,7 +51,7 @@ def _declared_columns(cls):
         if not value.store or isinstance(value, odoo_fields.One2many):
             continue
         columns.add(name)
-    return columns
+    return columns - MAGIC
 
 
 def migrate(cr, version):
@@ -72,9 +77,9 @@ def migrate(cr, version):
 
         cr.execute("""
             SELECT column_name FROM information_schema.columns
-             WHERE table_name = %s AND column_name LIKE 'x!_%%' ESCAPE '!'
+             WHERE table_name = %s
         """, (table,))
-        existing = {row[0] for row in cr.fetchall()}
+        existing = {row[0] for row in cr.fetchall()} - MAGIC
 
         declared = _declared_columns(cls)
         missing = declared - existing
