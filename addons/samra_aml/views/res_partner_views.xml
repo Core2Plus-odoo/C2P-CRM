@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Priority 99 for the same reason the occasion views carry it: at equal
+         priority ir.ui.view._order lets the name decide, and a view named
+         res.partner.aml.* would sort ahead of res.partner.tree and quietly
+         become the default partner list for the whole database. -->
+
+    <record id="view_partner_form_aml" model="ir.ui.view">
+        <field name="name">res.partner.form.aml</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="after">
+                <widget name="web_ribbon" title="AML Blocked" bg_color="text-bg-danger"
+                        invisible="x_aml_status != 'blacklist'"/>
+                <widget name="web_ribbon" title="Possible Match" bg_color="text-bg-warning"
+                        invisible="x_aml_status != 'review'"/>
+            </xpath>
+            <notebook position="inside">
+                <page string="AML" name="samra_aml" groups="samra_aml.group_aml_user">
+                    <group>
+                        <group string="Status">
+                            <field name="x_aml_status"/>
+                            <field name="x_aml_matched_list"
+                                   invisible="not x_aml_matched_list"/>
+                            <field name="x_aml_score" invisible="not x_aml_score"/>
+                            <field name="x_aml_blocked" invisible="1"/>
+                        </group>
+                        <group string="Screening">
+                            <field name="x_aml_last_screened"/>
+                            <field name="x_aml_next_due"/>
+                            <button name="action_samra_aml_screen" type="object"
+                                    string="Screen Now" icon="fa-refresh"
+                                    class="btn-link"
+                                    groups="samra_aml.group_aml_manager"/>
+                            <button name="action_samra_aml_override" type="object"
+                                    string="Record Override" icon="fa-unlock"
+                                    class="btn-link"
+                                    invisible="not x_aml_blocked"
+                                    groups="samra_aml.group_aml_manager"/>
+                        </group>
+                    </group>
+                    <field name="x_aml_screening_ids" readonly="1">
+                        <list decoration-danger="status == 'blacklist'"
+                              decoration-warning="status == 'review'"
+                              decoration-muted="status == 'error'">
+                            <field name="screened_on"/>
+                            <field name="status"/>
+                            <field name="matched_name"/>
+                            <field name="list_name"/>
+                            <field name="detail"/>
+                        </list>
+                    </field>
+                    <field name="x_aml_override_ids" readonly="1"
+                           groups="samra_aml.group_aml_manager">
+                        <list>
+                            <field name="create_date" string="Granted"/>
+                            <field name="user_id" string="By"/>
+                            <field name="valid_until"/>
+                            <field name="reason"/>
+                        </list>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+</odoo>

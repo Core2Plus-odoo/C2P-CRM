@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_samra_aml_provider_form" model="ir.ui.view">
+        <field name="name">samra.aml.provider.form</field>
+        <field name="model">samra.aml.provider</field>
+        <field name="arch" type="xml">
+            <form string="AML Provider">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. the firm's AML software"/></h1>
+                    </div>
+                    <group>
+                        <group string="Connection">
+                            <field name="provider_type"/>
+                            <field name="endpoint" invisible="provider_type != 'rest'"
+                                   required="provider_type == 'rest'"
+                                   placeholder="https://aml.example.com/api/v2/screen"/>
+                            <field name="auth_header" invisible="provider_type != 'rest'"/>
+                            <field name="auth_prefix" invisible="provider_type != 'rest'"/>
+                            <field name="api_key" password="True"
+                                   invisible="provider_type != 'rest'"/>
+                            <field name="timeout" invisible="provider_type != 'rest'"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Policy">
+                            <field name="rescreen_days"/>
+                            <field name="sequence"/>
+                        </group>
+                    </group>
+                    <group string="Reading the answer" invisible="provider_type != 'rest'">
+                        <div class="text-muted" colspan="2">
+                            Paths into the response body, dotted. List positions are
+                            allowed: <code>results.0.status</code>. A status value that
+                            appears in neither list below is treated as a possible
+                            match, which blocks.
+                        </div>
+                        <field name="status_path"/>
+                        <field name="score_path"/>
+                        <field name="list_path"/>
+                        <field name="matched_name_path"/>
+                        <field name="cleared_values"/>
+                        <field name="blocked_values"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_samra_aml_provider_list" model="ir.ui.view">
+        <field name="name">samra.aml.provider.list</field>
+        <field name="model">samra.aml.provider</field>
+        <field name="arch" type="xml">
+            <list string="AML Providers">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="provider_type"/>
+                <field name="endpoint"/>
+                <field name="rescreen_days"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_samra_aml_provider" model="ir.actions.act_window">
+        <field name="name">AML Providers</field>
+        <field name="res_model">samra.aml.provider</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+</odoo>

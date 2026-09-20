@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Nightly, after trading. Screening is an ongoing-monitoring
+             obligation, not a one-off at onboarding: the lists move, the
+             customers do not. -->
+        <record id="ir_cron_samra_aml_rescreen" model="ir.cron">
+            <field name="name">Samra AML: Re-screen Customers</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_samra_aml_rescreen()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Ships disabled and manual, so installing the module cannot start
+             sending customer names anywhere. Somebody configures the endpoint
+             and switches it on deliberately. -->
+        <record id="provider_placeholder" model="samra.aml.provider">
+            <field name="name">AML Provider (not yet configured)</field>
+            <field name="provider_type">manual</field>
+            <field name="active" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

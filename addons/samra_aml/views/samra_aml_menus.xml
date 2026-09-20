@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_samra_aml_root"
+              name="AML Screening"
+              parent="contacts.menu_contacts"
+              sequence="90"
+              groups="samra_aml.group_aml_user"/>
+
+    <menuitem id="menu_samra_aml_screening"
+              name="Screening History"
+              parent="menu_samra_aml_root"
+              action="action_samra_aml_screening"
+              sequence="10"/>
+
+    <menuitem id="menu_samra_aml_override"
+              name="Overrides"
+              parent="menu_samra_aml_root"
+              action="action_samra_aml_override"
+              sequence="20"
+              groups="samra_aml.group_aml_manager"/>
+
+    <menuitem id="menu_samra_aml_provider"
+              name="Providers"
+              parent="menu_samra_aml_root"
+              action="action_samra_aml_provider"
+              sequence="30"
+              groups="samra_aml.group_aml_manager"/>
+
+</odoo>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_samra_aml_override_list" model="ir.ui.view">
+        <field name="name">samra.aml.override.list</field>
+        <field name="model">samra.aml.override</field>
+        <field name="arch" type="xml">
+            <list string="AML Overrides" create="false" delete="false">
+                <field name="create_date" string="Granted"/>
+                <field name="partner_id"/>
+                <field name="user_id" string="Granted By"/>
+                <field name="valid_until"/>
+                <field name="document" optional="show"/>
+                <field name="reason"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_samra_aml_override" model="ir.actions.act_window">
+        <field name="name">AML Overrides</field>
+        <field name="res_model">samra.aml.override</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+</odoo>
