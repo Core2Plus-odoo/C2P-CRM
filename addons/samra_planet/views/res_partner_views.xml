@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form_planet" model="ir.ui.view">
+        <field name="name">res.partner.form.planet</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Tax-Free" name="samra_planet" groups="samra_planet.group_planet_user">
+                    <group>
+                        <field name="x_planet_is_tourist"/>
+                        <field name="x_planet_passport_number"
+                               invisible="not x_planet_is_tourist"/>
+                    </group>
+                    <field name="x_planet_issuance_ids" readonly="1">
+                        <list decoration-success="status == 'approved'"
+                              decoration-danger="status == 'declined'">
+                            <field name="create_date" string="Issued"/>
+                            <field name="order_ref"/>
+                            <field name="status"/>
+                            <field name="tag_number"/>
+                            <field name="refundable_vat"/>
+                        </list>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+</odoo>

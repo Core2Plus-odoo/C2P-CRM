@@ -92,7 +92,7 @@ jobs:
           python "$HOME/odoo/odoo-bin" \
             -d ci \
             --addons-path="$HOME/odoo/addons,$GITHUB_WORKSPACE/repo/addons" \
-            -i samra_crm,samra_gold,samra_aml \
+            -i samra_crm,samra_gold,samra_aml,samra_planet,samra_rfid \
             --db_host=localhost --db_port=5432 \
             --db_user=odoo --db_password=odoo \
             --stop-after-init --log-level=warn \
@@ -109,7 +109,7 @@ jobs:
             exit 1
           fi
 
-          for module in samra_crm samra_gold samra_aml; do
+          for module in samra_crm samra_gold samra_aml samra_planet samra_rfid; do
             state=$(PGPASSWORD=odoo psql -h localhost -U odoo -d ci -tAc \
               "select state from ir_module_module where name = '$module'")
             echo "$module: $state"
@@ -135,11 +135,11 @@ jobs:
           python "$HOME/odoo/odoo-bin" \
             -d ci \
             --addons-path="$HOME/odoo/addons,$GITHUB_WORKSPACE/repo/addons" \
-            -u samra_crm,samra_gold,samra_aml \
+            -u samra_crm,samra_gold,samra_aml,samra_planet,samra_rfid \
             --db_host=localhost --db_port=5432 \
             --db_user=odoo --db_password=odoo \
             --stop-after-init --log-level=test \
-            --test-enable --test-tags '/samra_crm,/samra_gold,/samra_aml' \
+            --test-enable --test-tags '/samra_crm,/samra_gold,/samra_aml,/samra_planet,/samra_rfid' \
             2>&1 | tee upgrade.log
 
           # Read Odoo's own verdict rather than grepping for ERROR. A test

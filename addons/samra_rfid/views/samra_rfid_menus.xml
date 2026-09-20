@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_samra_rfid_root"
+              name="RFID Sync"
+              parent="stock.menu_stock_root"
+              sequence="95"
+              groups="samra_rfid.group_rfid_user"/>
+
+    <menuitem id="menu_samra_rfid_push"
+              name="Stock Pushes"
+              parent="menu_samra_rfid_root"
+              action="action_samra_rfid_push"
+              sequence="10"/>
+
+    <menuitem id="menu_samra_rfid_provider"
+              name="Providers"
+              parent="menu_samra_rfid_root"
+              action="action_samra_rfid_provider"
+              sequence="20"
+              groups="samra_rfid.group_rfid_manager"/>
+
+</odoo>

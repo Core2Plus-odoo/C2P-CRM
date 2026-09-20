@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_samra_planet_root"
+              name="Tax-Free"
+              parent="contacts.menu_contacts"
+              sequence="91"
+              groups="samra_planet.group_planet_user"/>
+
+    <menuitem id="menu_samra_planet_issuance"
+              name="Issuances"
+              parent="menu_samra_planet_root"
+              action="action_samra_planet_issuance"
+              sequence="10"/>
+
+    <menuitem id="menu_samra_planet_provider"
+              name="Providers"
+              parent="menu_samra_planet_root"
+              action="action_samra_planet_provider"
+              sequence="20"
+              groups="samra_planet.group_planet_manager"/>
+
+</odoo>

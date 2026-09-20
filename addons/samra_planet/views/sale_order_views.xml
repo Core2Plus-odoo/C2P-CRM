@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- A one-line note on the order itself, not a full page: the issuance
+         record is the source of truth and already has its own list under
+         the customer's Tax-Free tab. This just says whether one exists. -->
+    <record id="view_order_form_planet" model="ir.ui.view">
+        <field name="name">sale.order.form.planet</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button type="object" name="action_open_planet_issuances"
+                        class="oe_stat_button" icon="fa-plane"
+                        invisible="not x_planet_issuance_count"
+                        groups="samra_planet.group_planet_user">
+                    <field name="x_planet_issuance_count" widget="statinfo"
+                           string="Tax-Free"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
