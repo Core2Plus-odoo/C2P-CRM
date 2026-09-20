@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_samra_aml_screening_list" model="ir.ui.view">
+        <field name="name">samra.aml.screening.list</field>
+        <field name="model">samra.aml.screening</field>
+        <field name="arch" type="xml">
+            <list string="Screening History" create="false" delete="false"
+                  decoration-danger="status == 'blacklist'"
+                  decoration-warning="status == 'review'"
+                  decoration-muted="status == 'error'">
+                <field name="screened_on"/>
+                <field name="partner_id"/>
+                <field name="status"/>
+                <field name="matched_name"/>
+                <field name="list_name"/>
+                <field name="score" optional="show"/>
+                <field name="provider_id" optional="hide"/>
+                <field name="screened_by" optional="hide"/>
+                <field name="detail" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_samra_aml_screening_form" model="ir.ui.view">
+        <field name="name">samra.aml.screening.form</field>
+        <field name="model">samra.aml.screening</field>
+        <field name="arch" type="xml">
+            <form string="Screening Result" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="status"/>
+                            <field name="matched_name"/>
+                            <field name="list_name"/>
+                            <field name="score"/>
+                        </group>
+                        <group>
+                            <field name="provider_id"/>
+                            <field name="screened_on"/>
+                            <field name="screened_by"/>
+                            <field name="next_due"/>
+                        </group>
+                    </group>
+                    <group string="What happened">
+                        <field name="detail" nolabel="1" colspan="2"/>
+                    </group>
+                    <notebook groups="samra_aml.group_aml_manager">
+                        <page string="Sent"><field name="request_payload" nolabel="1"/></page>
+                        <page string="Received"><field name="response_payload" nolabel="1"/></page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_samra_aml_screening_search" model="ir.ui.view">
+        <field name="name">samra.aml.screening.search</field>
+        <field name="model">samra.aml.screening</field>
+        <field name="arch" type="xml">
+            <search string="Screening">
+                <field name="partner_id"/>
+                <field name="matched_name"/>
+                <filter name="blocked" string="Blocked"
+                        domain="[('status', 'in', ['blacklist', 'review'])]"/>
+                <filter name="failed" string="Screening Failed"
+                        domain="[('status', '=', 'error')]"/>
+                <group>
+                    <filter name="by_status" string="Status"
+                            context="{'group_by': 'status'}"/>
+                    <filter name="by_customer" string="Customer"
+                            context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_samra_aml_screening" model="ir.actions.act_window">
+        <field name="name">Screening History</field>
+        <field name="res_model">samra.aml.screening</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

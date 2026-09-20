@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Nobody deletes a screening or an override, including the compliance
+         manager. An audit trail somebody can tidy up is not an audit trail,
+         and these records are the evidence that the control was operating. -->
+
+    <record id="access_samra_aml_provider_user" model="ir.model.access">
+        <field name="name">samra.aml.provider.user</field>
+        <field name="model_id" ref="model_samra_aml_provider"/>
+        <field name="group_id" ref="samra_aml.group_aml_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_aml_provider_manager" model="ir.model.access">
+        <field name="name">samra.aml.provider.manager</field>
+        <field name="model_id" ref="model_samra_aml_provider"/>
+        <field name="group_id" ref="samra_aml.group_aml_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="access_samra_aml_screening_user" model="ir.model.access">
+        <field name="name">samra.aml.screening.user</field>
+        <field name="model_id" ref="model_samra_aml_screening"/>
+        <field name="group_id" ref="samra_aml.group_aml_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_aml_screening_manager" model="ir.model.access">
+        <field name="name">samra.aml.screening.manager</field>
+        <field name="model_id" ref="model_samra_aml_screening"/>
+        <field name="group_id" ref="samra_aml.group_aml_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_aml_override_user" model="ir.model.access">
+        <field name="name">samra.aml.override.user</field>
+        <field name="model_id" ref="model_samra_aml_override"/>
+        <field name="group_id" ref="samra_aml.group_aml_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_aml_override_manager" model="ir.model.access">
+        <field name="name">samra.aml.override.manager</field>
+        <field name="model_id" ref="model_samra_aml_override"/>
+        <field name="group_id" ref="samra_aml.group_aml_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_aml_override_wizard" model="ir.model.access">
+        <field name="name">samra.aml.override.wizard</field>
+        <field name="model_id" ref="model_samra_aml_override_wizard"/>
+        <field name="group_id" ref="samra_aml.group_aml_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+</odoo>

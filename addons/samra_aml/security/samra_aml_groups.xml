@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Two groups, because the two jobs are different. Sales staff need
+             to see that a customer is blocked, or the control is invisible
+             until it refuses a sale. Only a compliance manager configures the
+             provider, holds the credential, or overrides a hit.
+
+             res.groups.privilege, not category_id: Odoo 19 moved the grouping
+             out of the group onto a privilege record. -->
+
+        <record id="res_groups_privilege_aml" model="res.groups.privilege">
+            <field name="name">AML Screening</field>
+            <field name="category_id" ref="base.module_category_sales_sales"/>
+        </record>
+
+        <record id="group_aml_user" model="res.groups">
+            <field name="name">Screening Visible</field>
+            <field name="sequence">10</field>
+            <field name="privilege_id" ref="res_groups_privilege_aml"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="group_aml_manager" model="res.groups">
+            <field name="name">Compliance Manager</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" ref="res_groups_privilege_aml"/>
+            <field name="implied_ids" eval="[(4, ref('samra_aml.group_aml_user'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
+        </record>
+
+    </data>
+</odoo>
