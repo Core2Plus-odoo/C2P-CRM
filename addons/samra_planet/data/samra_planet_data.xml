@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Active and manual by default: installing this module must never
+             start sending shopper passport data anywhere on its own. -->
+        <record id="provider_manual_default" model="samra.planet.provider">
+            <field name="name">Planet (manual entry)</field>
+            <field name="provider_type">manual</field>
+            <field name="active" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

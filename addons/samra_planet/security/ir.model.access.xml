@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="access_samra_planet_provider_user" model="ir.model.access">
+        <field name="name">samra.planet.provider.user</field>
+        <field name="model_id" ref="model_samra_planet_provider"/>
+        <field name="group_id" ref="samra_planet.group_planet_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_planet_provider_manager" model="ir.model.access">
+        <field name="name">samra.planet.provider.manager</field>
+        <field name="model_id" ref="model_samra_planet_provider"/>
+        <field name="group_id" ref="samra_planet.group_planet_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <!-- Nobody deletes an issuance, including the manager: it is the fiscal
+         record of what Planet was asked and told, and a deletable one is
+         not an audit trail. -->
+
+    <record id="access_samra_planet_issuance_user" model="ir.model.access">
+        <field name="name">samra.planet.issuance.user</field>
+        <field name="model_id" ref="model_samra_planet_issuance"/>
+        <field name="group_id" ref="samra_planet.group_planet_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_planet_issuance_manager" model="ir.model.access">
+        <field name="name">samra.planet.issuance.manager</field>
+        <field name="model_id" ref="model_samra_planet_issuance"/>
+        <field name="group_id" ref="samra_planet.group_planet_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+</odoo>
