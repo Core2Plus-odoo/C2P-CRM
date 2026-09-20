@@ -283,6 +283,60 @@ class SamraDemoData(models.TransientModel):
 
         return filled
 
+    def _generate_aml_status(self, rng, customers):
+        """Give some customers a screening history, if samra_aml is installed.
+
+        Guarded the same way the dossier's own AML panel is guarded -- this
+        module does not depend on samra_aml, so where it is absent this is a
+        no-op and nothing else in the wizard changes.
+
+        The distribution is deliberately mixed rather than everyone clear:
+        a demo where every customer is cleared never shows the block, the
+        override, or the dossier banners this data exists to demonstrate. One
+        blacklisted, a couple of possible matches, most cleared, and a few
+        left not screened -- which is also realistic, since screening here
+        runs on a schedule and a fresh walk-in has no status yet.
+        """
+        if 'samra.aml.screening' not in self.env:
+            return {}
+
+        provider = self.env['samra.aml.provider'].search([], limit=1)
+        if not provider:
+            return {}
+
+        Screening = self.env['samra.aml.screening']
+        counts = {'whitelist': 0, 'review': 0, 'blacklist': 0, 'skipped': 0}
+        matched_lists = ['UN Consolidated', 'UAE Local Terrorist List', 'OFAC SDN']
+
+        for partner in customers:
+            if partner.x_aml_status != 'not_screened':
+                continue  # a second run should not re-roll an existing result
+
+            roll = rng.random()
+            if roll < 0.08:
+                status = 'blacklist'
+            elif roll < 0.20:
+                status = 'review'
+            elif roll < 0.85:
+                status = 'whitelist'
+            else:
+                counts['skipped'] += 1
+                continue
+
+            verdict = {
+                'status': status,
+                'detail': _("Demo screening result."),
+                'score': round(rng.uniform(80, 99), 1) if status != 'whitelist' else 0.0,
+                'list_name': rng.choice(matched_lists) if status != 'whitelist' else '',
+                'matched_name': partner.name.upper() if status != 'whitelist' else '',
+                'request': '{}',
+                'response': '{}',
+            }
+            Screening._record(partner, provider, verdict)
+            counts[status] += 1
+
+        return counts
+
     # ------------------------------------------------------------------
 
     def action_generate(self):
@@ -340,6 +394,8 @@ class SamraDemoData(models.TransientModel):
         if self.with_occasions:
             occasions = self._generate_occasions(rng, customers)
 
+        aml = self._generate_aml_status(rng, customers)
+
         # The profile reads live, but list views, search and the dashboard read
         # the stored fields -- so refresh them rather than leaving the two
         # disagreeing until the nightly run.
@@ -353,11 +409,21 @@ class SamraDemoData(models.TransientModel):
             "Samra demo data: %s orders, %s products enriched, %s removed",
             len(orders), enriched, removed)
 
+        aml_line = ''
+        if aml:
+            aml_line = _(
+                "%(whitelist)s cleared, %(review)s possible match, "
+                "%(blacklist)s blacklisted by AML screening.\n",
+                whitelist=aml.get('whitelist', 0), review=aml.get('review', 0),
+                blacklist=aml.get('blacklist', 0),
+            )
+
         message = _(
             "%(orders)s orders created across %(months)s months.\n"
             "%(enriched)s products given specifications.\n"
             "%(wishlist)s wishlist items, %(viewed)s viewings, %(messages)s messages.\n"
             "%(birthdays)s birthdays and %(anniversaries)s anniversaries filled in.\n"
+            "%(aml_line)s"
             "%(removed)s previously generated orders removed.\n"
             "%(foreign)s confirmed orders were not created here and were left "
             "alone -- dashboard totals include them.\n"
@@ -366,6 +432,7 @@ class SamraDemoData(models.TransientModel):
             wishlist=engagement['wishlist'], viewed=engagement['viewed'],
             messages=engagement['messages'], removed=removed, foreign=foreign,
             birthdays=occasions['birthday'], anniversaries=occasions['anniversary'],
+            aml_line=aml_line,
         )
         return {
             'type': 'ir.actions.client',
