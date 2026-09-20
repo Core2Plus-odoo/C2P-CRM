@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="access_samra_rfid_provider_user" model="ir.model.access">
+        <field name="name">samra.rfid.provider.user</field>
+        <field name="model_id" ref="model_samra_rfid_provider"/>
+        <field name="group_id" ref="samra_rfid.group_rfid_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_rfid_provider_manager" model="ir.model.access">
+        <field name="name">samra.rfid.provider.manager</field>
+        <field name="model_id" ref="model_samra_rfid_provider"/>
+        <field name="group_id" ref="samra_rfid.group_rfid_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="access_samra_rfid_push_user" model="ir.model.access">
+        <field name="name">samra.rfid.push.user</field>
+        <field name="model_id" ref="model_samra_rfid_push"/>
+        <field name="group_id" ref="samra_rfid.group_rfid_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_rfid_push_manager" model="ir.model.access">
+        <field name="name">samra.rfid.push.manager</field>
+        <field name="model_id" ref="model_samra_rfid_push"/>
+        <field name="group_id" ref="samra_rfid.group_rfid_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_rfid_count_user" model="ir.model.access">
+        <field name="name">samra.rfid.count.user</field>
+        <field name="model_id" ref="model_samra_rfid_count"/>
+        <field name="group_id" ref="samra_rfid.group_rfid_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_samra_rfid_count_manager" model="ir.model.access">
+        <field name="name">samra.rfid.count.manager</field>
+        <field name="model_id" ref="model_samra_rfid_count"/>
+        <field name="group_id" ref="samra_rfid.group_rfid_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+</odoo>

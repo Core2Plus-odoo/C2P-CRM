@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_samra_rfid_push_list" model="ir.ui.view">
+        <field name="name">samra.rfid.push.list</field>
+        <field name="model">samra.rfid.push</field>
+        <field name="arch" type="xml">
+            <list string="RFID Pushes" create="false" delete="false"
+                  decoration-danger="variance_count > 0"
+                  decoration-muted="status == 'error'">
+                <field name="push_date"/>
+                <field name="provider_id"/>
+                <field name="status"/>
+                <field name="line_count"/>
+                <field name="variance_count" string="Gaps"/>
+                <field name="detail" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_samra_rfid_push_form" model="ir.ui.view">
+        <field name="name">samra.rfid.push.form</field>
+        <field name="model">samra.rfid.push</field>
+        <field name="arch" type="xml">
+            <form string="RFID Push" create="false">
+                <header>
+                    <button name="action_simulate_scan" type="object"
+                            string="Simulate Scan (Demo)"
+                            groups="samra_rfid.group_rfid_manager"
+                            help="Stands in for the vendor's real overnight scan, which this instance does not have configured yet. Only fills lines with no count recorded."/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="push_date"/>
+                            <field name="provider_id"/>
+                            <field name="status"/>
+                            <field name="detail"/>
+                        </group>
+                        <group>
+                            <field name="line_count"/>
+                            <field name="variance_count"/>
+                        </group>
+                    </group>
+                    <field name="count_ids">
+                        <list editable="bottom" decoration-danger="has_variance"
+                              decoration-muted="not is_scanned">
+                            <field name="product_id" readonly="1"/>
+                            <field name="book_qty" readonly="1"/>
+                            <field name="is_scanned" widget="boolean_toggle"
+                                   string="Scanned?" readonly="1"/>
+                            <field name="rfid_qty"
+                                   placeholder="not yet scanned"/>
+                            <field name="variance" readonly="1"/>
+                        </list>
+                    </field>
+                    <notebook groups="samra_rfid.group_rfid_manager">
+                        <page string="Sent"><field name="request_payload" nolabel="1"/></page>
+                        <page string="Received"><field name="response_payload" nolabel="1"/></page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_samra_rfid_push" model="ir.actions.act_window">
+        <field name="name">RFID Pushes</field>
+        <field name="res_model">samra.rfid.push</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

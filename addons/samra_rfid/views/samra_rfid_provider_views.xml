@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_samra_rfid_provider_form" model="ir.ui.view">
+        <field name="name">samra.rfid.provider.form</field>
+        <field name="model">samra.rfid.provider</field>
+        <field name="arch" type="xml">
+            <form string="RFID Provider">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Connection">
+                            <field name="provider_type"/>
+                            <field name="endpoint" invisible="provider_type != 'rest'"
+                                   required="provider_type == 'rest'"/>
+                            <field name="auth_header" invisible="provider_type != 'rest'"/>
+                            <field name="auth_prefix" invisible="provider_type != 'rest'"/>
+                            <field name="api_key" password="True"
+                                   invisible="provider_type != 'rest'"/>
+                            <field name="timeout" invisible="provider_type != 'rest'"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Gap Analysis">
+                            <field name="variance_tolerance"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_samra_rfid_provider_list" model="ir.ui.view">
+        <field name="name">samra.rfid.provider.list</field>
+        <field name="model">samra.rfid.provider</field>
+        <field name="arch" type="xml">
+            <list string="RFID Providers">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="provider_type"/>
+                <field name="variance_tolerance"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_samra_rfid_provider" model="ir.actions.act_window">
+        <field name="name">RFID Providers</field>
+        <field name="res_model">samra.rfid.provider</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+</odoo>

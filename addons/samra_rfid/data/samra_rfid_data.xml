@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="provider_manual_default" model="samra.rfid.provider">
+            <field name="name">RFID Vendor (manual)</field>
+            <field name="provider_type">manual</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Before trading opens, after the mall's own overnight scan has
+             had time to run. -->
+        <record id="ir_cron_samra_rfid_push" model="ir.cron">
+            <field name="name">Samra RFID: Push Stock Snapshot</field>
+            <field name="model_id" ref="model_samra_rfid_push"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_samra_rfid_push()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
+
+    </data>
+</odoo>
