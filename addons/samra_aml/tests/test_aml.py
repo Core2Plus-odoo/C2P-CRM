@@ -282,3 +282,32 @@ class TestTheTill(AmlCase):
             self.env['pos.order']._process_order(
                 {'partner_id': self.partner.id, 'session_id': 0}, False)
         self.assertNotIn('AML screening', str(caught.exception))
+
+
+@tagged('post_install', '-at_install')
+class TestTheDossier(AmlCase):
+    """The 360 reads AML through a guard, so it must work with the module
+    present and be absent-safe without it. Only the first half is testable
+    here; the second is what the guard is for."""
+
+    def test_the_dossier_carries_the_current_status(self):
+        self.screen_as(answer('hit', 98, 'UN Consolidated', 'A RAHMAN'))
+        aml = self.partner.get_samra_profile()['aml']
+        self.assertEqual(aml['status'], 'blacklist')
+        self.assertTrue(aml['blocked'])
+
+    def test_a_cleared_customer_still_reports_a_status(self):
+        """Absent would read as 'not checked', which is the opposite of what
+        a cleared screening means."""
+        self.screen_as(answer('clear'))
+        aml = self.partner.get_samra_profile()['aml']
+        self.assertEqual(aml['status'], 'whitelist')
+        self.assertFalse(aml['blocked'])
+
+    def test_the_dossier_carries_only_the_status(self):
+        """The detail belongs on the AML tab. Asserted rather than left to
+        drift, because a payload quietly regrowing fields is how a screen
+        ends up showing what somebody asked it not to."""
+        self.screen_as(answer('hit', 98, 'UN Consolidated', 'A RAHMAN'))
+        aml = self.partner.get_samra_profile()['aml']
+        self.assertEqual(set(aml), {'status', 'label', 'blocked'})
