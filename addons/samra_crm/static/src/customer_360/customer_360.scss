@@ -143,6 +143,23 @@
             background: var(--samra-gold-wash);
             border-color: var(--samra-gold-wash);
         }
+
+        // A blocked customer has to read as a stop, not as one more tag. It
+        // is the only chip here that is not gold or neutral, which is the
+        // point: on a dossier full of soft colour, this one interrupts.
+        &--aml-block {
+            color: #7f1d1d;
+            background: #fee2e2;
+            border-color: #fca5a5;
+            font-weight: 600;
+        }
+
+        // Cleared is deliberately quiet. It is reassurance, not news.
+        &--aml-clear {
+            color: var(--samra-ink-soft);
+            background: var(--samra-track);
+            border-color: var(--samra-line-firm);
+        }
     }
 
     .samra-facts {

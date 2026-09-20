@@ -31,6 +31,11 @@
                                   t-esc="d.vip_tier_label"/>
                             <span class="samra-chip samra-chip--gold"
                                   t-foreach="d.tags" t-as="tag" t-key="tag.id" t-esc="tag.name"/>
+                            <span t-if="d.aml and d.aml.blocked"
+                                  class="samra-chip samra-chip--aml-block"
+                                  t-esc="'AML — ' + d.aml.label"/>
+                            <span t-if="d.aml and d.aml.status === 'whitelist'"
+                                  class="samra-chip samra-chip--aml-clear">AML cleared</span>
                             <span class="samra-chip" t-if="d.consent.whatsapp">WhatsApp opted in</span>
                             <span class="samra-chip" t-if="d.consent.sms">SMS opted in</span>
                         </div>

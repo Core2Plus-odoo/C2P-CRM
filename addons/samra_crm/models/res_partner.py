@@ -196,6 +196,30 @@ class ResPartner(models.Model):
             'created': fields.Date.to_string(ticket.create_date) if ticket.create_date else None,
         } for ticket in tickets]
 
+    def _samra_aml(self):
+        """Screening status, when samra_aml is installed.
+
+        Guarded the way _samra_tickets is: this module does not depend on
+        samra_aml, so where it is absent the panel is simply not rendered and
+        nothing else on the dossier changes.
+
+        The dossier shows the current status and nothing else. Which list
+        matched, when it was screened and who granted an override all live on
+        the contact's AML tab, where somebody is looking at the decision
+        rather than at the customer. Sending them here too would only invite
+        them onto a screen that is read mid-conversation.
+        """
+        self.ensure_one()
+        if 'samra.aml.screening' not in self.env:
+            return None
+
+        return {
+            'status': self.x_aml_status,
+            'label': dict(self._fields['x_aml_status'].selection).get(
+                self.x_aml_status, ''),
+            'blocked': self.x_aml_blocked,
+        }
+
     # ------------------------------------------------------------------
     # Showing-room capture
     # ------------------------------------------------------------------
@@ -362,4 +386,5 @@ class ResPartner(models.Model):
             'analytics': self._samra_analytics(),
             'recommendations': self._samra_recommendations(),
             'capture_branch': self._samra_default_branch().display_name or '',
+            'aml': self._samra_aml(),
         }
