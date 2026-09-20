@@ -48,6 +48,43 @@
     @keyframes samra-spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { .samra-spinner { animation: none; } }
 
+    // ---------- alerts ----------
+    // Sits above the hero's own gradient, full width, so it is the first
+    // thing the page shows -- not a chip competing with tags and consent
+    // pills for attention. Blocked and at-risk can both be true at once,
+    // so this stacks rather than picking one.
+    .samra-alerts {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .samra-alert {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 24px;
+        font-size: 12.5px;
+        line-height: 1.4;
+
+        i { font-size: 14px; flex: none; }
+        b { font-weight: 700; }
+
+        // Solid, not a wash: this is the one thing on the dossier that must
+        // read as a stop rather than as one more piece of context.
+        &--block {
+            color: #fff;
+            background: var(--samra-danger);
+        }
+
+        // Same hue, quieter fill -- at risk is worth a associate's attention,
+        // it is not a reason a sale cannot happen.
+        &--risk {
+            color: var(--samra-danger);
+            background: var(--samra-danger-wash);
+            border-bottom: 1px solid var(--samra-line);
+        }
+    }
+
     // ---------- hero ----------
     .samra-hero {
         padding: 20px 24px 16px;

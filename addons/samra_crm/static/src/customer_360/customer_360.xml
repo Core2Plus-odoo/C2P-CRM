@@ -19,6 +19,22 @@
 
             <!-- ============ Hero ============ -->
             <header class="samra-hero">
+                <div class="samra-alerts" t-if="(d.aml and d.aml.blocked) or d.stats.at_risk">
+                    <div class="samra-alert samra-alert--block" t-if="d.aml and d.aml.blocked">
+                        <i class="fa fa-shield"/>
+                        <span>
+                            <b>AML — <t t-esc="d.aml.label"/>.</b>
+                            This customer cannot be sold to without a recorded override.
+                        </span>
+                    </div>
+                    <div class="samra-alert samra-alert--risk" t-if="d.stats.at_risk">
+                        <i class="fa fa-clock-o"/>
+                        <span>
+                            <b>At risk.</b>
+                            No purchase in <t t-esc="d.stats.days_since_purchase"/> days.
+                        </span>
+                    </div>
+                </div>
                 <div class="samra-hero__top">
                     <img class="samra-avatar" t-att-src="d.avatar" t-att-alt="d.name"/>
 
@@ -31,9 +47,6 @@
                                   t-esc="d.vip_tier_label"/>
                             <span class="samra-chip samra-chip--gold"
                                   t-foreach="d.tags" t-as="tag" t-key="tag.id" t-esc="tag.name"/>
-                            <span t-if="d.aml and d.aml.blocked"
-                                  class="samra-chip samra-chip--aml-block"
-                                  t-esc="'AML — ' + d.aml.label"/>
                             <span t-if="d.aml and d.aml.status === 'whitelist'"
                                   class="samra-chip samra-chip--aml-clear">AML cleared</span>
                             <span class="samra-chip" t-if="d.consent.whatsapp">WhatsApp opted in</span>
