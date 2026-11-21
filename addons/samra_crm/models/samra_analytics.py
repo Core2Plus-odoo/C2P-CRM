@@ -91,7 +91,7 @@ class ResPartnerAnalytics(models.Model):
                 continue
             key = _month_key(order.date_order)
             if key in buckets:
-                buckets[key]['revenue'] += order.amount_total
+                buckets[key]['revenue'] += self._samra_to_company_currency(order, order.amount_total)
                 buckets[key]['orders'] += 1
 
         series = list(buckets.values())
@@ -112,7 +112,7 @@ class ResPartnerAnalytics(models.Model):
                     continue
                 bucket = totals[key]
                 bucket['label'] = label_fn(line)
-                bucket['revenue'] += line.price_subtotal
+                bucket['revenue'] += self._samra_to_company_currency(line.order_id, line.price_subtotal)
                 bucket['qty'] += line.product_uom_qty
         return self._samra_rank(totals)
 
@@ -174,7 +174,9 @@ class ResPartnerAnalytics(models.Model):
         self.ensure_one()
         orders = self._samra_confirmed_orders()
 
-        revenue = sum(orders.mapped('amount_total'))
+        converted_totals = {order.id: self._samra_to_company_currency(order, order.amount_total)
+                             for order in orders}
+        revenue = sum(converted_totals.values())
         count = len(orders)
         dates = [o.date_order for o in orders if o.date_order]
 
@@ -183,7 +185,7 @@ class ResPartnerAnalytics(models.Model):
         gold_weight = sum(
             (line.product_id.x_gold_weight or 0.0) * line.product_uom_qty for line in lines)
 
-        largest = max(orders, key=lambda o: o.amount_total, default=None)
+        largest = max(orders, key=lambda o: converted_totals[o.id], default=None)
 
         wishlist = self.env['x_samra_wishlist'].search([('x_partner_id', '=', self.id)])
         messages = self.env['x_samra_whatsapp_log'].search([('x_partner_id', '=', self.id)])
@@ -197,7 +199,7 @@ class ResPartnerAnalytics(models.Model):
             'largest_order': {
                 'name': largest.name if largest else '',
                 'id': largest.id if largest else False,
-                'amount': largest.amount_total if largest else 0.0,
+                'amount': converted_totals[largest.id] if largest else 0.0,
             },
             'first_purchase': fields.Date.to_string(min(dates).date()) if dates else None,
             'last_purchase': fields.Date.to_string(max(dates).date()) if dates else None,

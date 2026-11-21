@@ -123,21 +123,34 @@ class ResPartnerMetrics(models.Model):
 
     @api.model
     def _samra_purchase_metrics(self, partners):
-        """Aggregate confirmed orders per partner in one grouped read."""
+        """Aggregate confirmed orders per partner in one grouped read.
+
+        Orders can carry a currency other than the company's. Grouping by
+        currency_id as well as partner_id keeps those subtotals apart so
+        each can be converted to company currency before being added
+        together, instead of summing figures as if they were already the
+        same unit -- the cause of x_lifetime_value showing a number that
+        didn't match the AED label on the customer profile.
+        """
+        company_currency = self.env.company.currency_id
+        today = fields.Date.today()
         groups = self.env['sale.order']._read_group(
             [('partner_id', 'in', partners.ids),
              ('state', 'in', list(CONFIRMED_STATES))],
-            ['partner_id'],
+            ['partner_id', 'currency_id'],
             ['amount_total:sum', '__count', 'date_order:max'],
         )
-        return {
-            partner.id: {
-                'total': total or 0.0,
-                'count': count,
-                'last': last,
-            }
-            for partner, total, count, last in groups
-        }
+        metrics = {}
+        for partner, currency, total, count, last in groups:
+            total = total or 0.0
+            if currency and currency != company_currency:
+                total = currency._convert(total, company_currency, self.env.company, today)
+            entry = metrics.setdefault(partner.id, {'total': 0.0, 'count': 0, 'last': False})
+            entry['total'] += total
+            entry['count'] += count
+            if last and (not entry['last'] or last > entry['last']):
+                entry['last'] = last
+        return metrics
 
     def _samra_apply_metrics(self, metrics, vip, vvip):
         """Write metrics onto partners, touching only what actually changed."""

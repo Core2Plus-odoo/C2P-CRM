@@ -67,6 +67,19 @@ class ResPartner(models.Model):
             'params': {'partner_id': self.id},
         }
 
+    def _samra_to_company_currency(self, order, amount):
+        """Convert an amount carried in an order's own currency to the
+        company's, so orders placed in different currencies can be summed
+        or listed together under the single currency label the profile
+        shows, instead of mixing units under one label.
+        """
+        company_currency = self.env.company.currency_id
+        if not order.currency_id or order.currency_id == company_currency:
+            return amount
+        return order.currency_id._convert(
+            amount, company_currency, order.company_id or self.env.company,
+            order.date_order.date() if order.date_order else fields.Date.today())
+
     def _samra_days_since_purchase(self):
         self.ensure_one()
         if not self.x_last_purchase_date:
@@ -110,7 +123,7 @@ class ResPartner(models.Model):
             'name': order.name,
             'invoices': order.invoice_ids.mapped('name'),
             'date': fields.Date.to_string(order.date_order) if order.date_order else None,
-            'amount_total': order.amount_total,
+            'amount_total': self._samra_to_company_currency(order, order.amount_total),
             'state': order.state,
             'branch': order.warehouse_id.display_name or '',
             'salesperson': order.user_id.display_name or '',
@@ -119,8 +132,8 @@ class ResPartner(models.Model):
                 'sku': line.product_id.default_code or '',
                 'description': line.product_id.display_name or line.name or '',
                 'qty': line.product_uom_qty,
-                'price': line.price_unit,
-                'subtotal': line.price_subtotal,
+                'price': self._samra_to_company_currency(order, line.price_unit),
+                'subtotal': self._samra_to_company_currency(order, line.price_subtotal),
                 'gold_weight': line.product_id.x_gold_weight,
                 'stone_details': line.product_id.x_stone_details or '',
             } for line in order.order_line if line.product_id and not line.display_type],
